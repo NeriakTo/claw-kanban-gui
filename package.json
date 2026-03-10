@@ -1,0 +1,60 @@
+{
+  "name": "claw-kanban",
+  "version": "0.1.0",
+  "description": "OpenClaw plugin — visual Kanban board for managing your lobster's tasks",
+  "type": "module",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Joeyzzyy/claw-kanban.git"
+  },
+  "bugs": "https://github.com/Joeyzzyy/claw-kanban/issues",
+  "homepage": "https://github.com/Joeyzzyy/claw-kanban#readme",
+  "author": "seenos",
+  "files": [
+    "dist",
+    "openclaw.plugin.json",
+    "skills",
+    "README.md",
+    "CLOUD_USAGE.md",
+    "LICENSE"
+  ],
+  "types": "dist/index.d.ts",
+  "bin": {
+    "claw-kanban": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsup && mkdir -p dist/templates && cp -R src/templates/* dist/templates/",
+    "prepublishOnly": "npm run build",
+    "dev": "tsup --watch",
+    "start": "node dist/cli.js help",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "openclaw",
+    "kanban",
+    "task-management",
+    "lobster",
+    "ai-agent"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "openclaw": {
+    "id": "claw-kanban",
+    "extensions": [
+      "./dist/plugin.js"
+    ]
+  }
+}

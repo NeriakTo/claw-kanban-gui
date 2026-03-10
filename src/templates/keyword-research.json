@@ -1,0 +1,14 @@
+{
+  "name": "Keyword Research & Analysis",
+  "description": "Discover keywords, analyze search intent, score difficulty, and map topic clusters (based on professional SEO/GEO frameworks).",
+  "tags": ["SEO", "Keyword-Research", "Strategy"],
+  "subtasks": [
+    { "title": "1. Analyze Seed Topic & Audience Intent", "done": false },
+    { "title": "2. Generate Primary & Long-tail Variations", "done": false },
+    { "title": "3. Classify Search Intent (Info/Nav/Com/Trans)", "done": false },
+    { "title": "4. Estimate Keyword Difficulty & Search Volume", "done": false },
+    { "title": "5. Identify GEO (Generative Engine) Opportunities", "done": false },
+    { "title": "6. Group into Topic Clusters & Map to Funnel", "done": false },
+    { "title": "7. Finalize Keyword Strategy Report", "done": false }
+  ]
+}

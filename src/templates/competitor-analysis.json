@@ -1,0 +1,14 @@
+{
+  "name": "Competitor Analysis",
+  "description": "Analyze top competitors on SERP, dissect their content structure, identify gaps, and reverse-engineer their SEO/GEO strategies.",
+  "tags": ["SEO", "Competitor-Analysis", "Strategy"],
+  "subtasks": [
+    { "title": "1. Identify Top 3-5 SERP Competitors", "done": false },
+    { "title": "2. Analyze Competitor Content Structure (H1-H3)", "done": false },
+    { "title": "3. Evaluate Content Quality (CORE-EEAT)", "done": false },
+    { "title": "4. Dissect Keyword Density & LSI usage", "done": false },
+    { "title": "5. Analyze Backlink Profile & Authority", "done": false },
+    { "title": "6. Identify Content Gaps & Weaknesses", "done": false },
+    { "title": "7. Generate Competitor Battlecard Report", "done": false }
+  ]
+}

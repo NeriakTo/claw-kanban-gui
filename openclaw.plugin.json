@@ -1,0 +1,149 @@
+{
+  "$schema": "https://docs.openclaw.ai/schemas/plugin.json",
+  "id": "claw-kanban",
+  "name": "claw-kanban",
+  "version": "0.1.0",
+  "description": "Visual Kanban board for managing your lobster's tasks. Track what your OpenClaw is doing, has done, and plans to do — all in one board.",
+  "author": "seenos",
+  "license": "MIT",
+  "homepage": "https://github.com/Joeyzzyy/webkanbanforopenclaw",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "Your API key for the Claw Kanban Cloud service. Get one at webkanbanforopenclaw.vercel.app"
+      },
+      "cloudApiEndpoint": {
+        "type": "string",
+        "description": "The endpoint for the Claw Kanban Cloud API.",
+        "default": "https://webkanbanforopenclaw.vercel.app/api/v1"
+      }
+    }
+  },
+  "skills": [
+    "skills/kanban-manage",
+    "skills/kanban-report",
+    "skills/seo-executor",
+    "skills/keyword-research",
+    "skills/competitor-analysis",
+    "skills/on-page-seo-auditor",
+    "skills/sitemap-gap-analyzer"
+  ],
+  "tools": {
+    "kanban_update": {
+      "description": "Create or update a task on the Kanban board",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["create", "update", "move", "complete", "fail"],
+            "description": "The action to perform"
+          },
+          "taskId": {
+            "type": "string",
+            "description": "Task ID (auto-generated on create if omitted)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Short task title"
+          },
+          "description": {
+            "type": "string",
+            "description": "What this task does"
+          },
+          "column": {
+            "type": "string",
+            "enum": ["backlog", "in_progress", "review", "done", "failed"],
+            "description": "Which Kanban column to place the task in"
+          },
+          "progress": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percentage progress (0-100)"
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Tags like 'code', 'email', 'research', etc."
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "OpenClaw session ID this task belongs to"
+          },
+          "subtasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": { "type": "string" },
+                "done": { "type": "boolean" }
+              },
+              "required": ["title"]
+            },
+            "description": "Subtask checklist"
+          },
+          "result": {
+            "type": "string",
+            "description": "Final result or output summary when completing"
+          },
+          "logMessage": {
+            "type": "string",
+            "description": "A new log message to append to the task's progress log."
+          },
+          "template": {
+            "type": "string",
+            "description": "Optional template name (e.g. 'keyword-research') to auto-populate description, tags, and subtasks."
+          },
+          "artifacts": {
+            "type": "array",
+            "description": "Optional array of files generated to attach to the task card.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "filename": { "type": "string", "description": "Name of the file to display (e.g., 'report.md')" },
+                "type": { "type": "string", "description": "e.g., markdown, html" },
+                "localPath": { "type": "string", "description": "The absolute or relative local path where you saved the file. The system will automatically upload this file to the cloud." }
+              },
+              "required": ["filename", "type", "localPath"]
+            }
+          }
+        },
+        "required": ["action"]
+      }
+    },
+    "kanban_query": {
+      "description": "Query the Kanban board — list tasks, get stats, search",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "enum": ["list", "stats", "detail", "search"],
+            "description": "Query type"
+          },
+          "column": {
+            "type": "string",
+            "enum": ["backlog", "in_progress", "review", "done", "failed", "all"],
+            "description": "Filter by column (default: all)"
+          },
+          "taskId": {
+            "type": "string",
+            "description": "Task ID for detail query"
+          },
+          "keyword": {
+            "type": "string",
+            "description": "Search keyword"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Max results (default: 20)"
+          }
+        },
+        "required": ["query"]
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "On-Page SEO Audit",
+  "description": "Comprehensive audit of a webpage for technical health, metadata optimization, content structure, and EEAT compliance.",
+  "tags": ["SEO", "Audit", "Optimization"],
+  "subtasks": [
+    { "title": "1. Fetch Target Webpage Content", "done": false },
+    { "title": "2. Audit Meta Title & Description Length/Intent", "done": false },
+    { "title": "3. Verify Heading Hierarchy (H1-H6)", "done": false },
+    { "title": "4. Check Keyword Placement & Density", "done": false },
+    { "title": "5. Analyze Internal & External Linking", "done": false },
+    { "title": "6. Evaluate CORE-EEAT Content Quality", "done": false },
+    { "title": "7. Compile Scored Audit Report & Action Plan", "done": false }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Sitemap Gap & Incremental SEO Planner",
+  "description": "Reads website sitemaps, analyzes existing content coverage, finds topical gaps, and plans high-ROI incremental SEO pages.",
+  "tags": ["SEO", "Sitemap", "Gap-Analysis", "Growth"],
+  "subtasks": [
+    { "title": "1. Fetch & Parse Sitemap.xml URLs", "done": false },
+    { "title": "2. Categorize Existing Content into Topic Clusters", "done": false },
+    { "title": "3. Analyze Site Niche & Audience Intent", "done": false },
+    { "title": "4. Conduct Search Engine Market Gap Research", "done": false },
+    { "title": "5. Identify Missing High-Traffic Topics (Content Gap)", "done": false },
+    { "title": "6. Prioritize Incremental SEO Pages by KD & ROI", "done": false },
+    { "title": "7. Generate SEO Expansion Strategy Report", "done": false }
+  ]
+}

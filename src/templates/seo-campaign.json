@@ -1,0 +1,15 @@
+{
+  "name": "SEO Content Campaign",
+  "description": "Comprehensive SEO workflow covering keyword discovery, search intent analysis, EEAT-compliant outline creation, and optimized content generation.",
+  "tags": ["SEO", "Content", "Marketing"],
+  "subtasks": [
+    { "title": "1. Analyze Search Intent & Target Audience", "done": false },
+    { "title": "2. Extract Primary & LSI/Long-tail Keywords", "done": false },
+    { "title": "3. Structure Competitor-beating Outline (H1-H3)", "done": false },
+    { "title": "4. Draft High-Retention Intro (Hook + Value)", "done": false },
+    { "title": "5. Generate Core Content sections (EEAT compliant)", "done": false },
+    { "title": "6. Optimize Meta Title, Description, and Slug", "done": false },
+    { "title": "7. Produce Internal/External Linking Strategy", "done": false },
+    { "title": "8. Final SEO Review & Readability Polish", "done": false }
+  ]
+}

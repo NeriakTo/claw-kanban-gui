@@ -1,6 +1,8 @@
 import { CloudBoardStore } from "./store/cloud-store.js";
-import type { KanbanUpdateParams, KanbanQueryParams } from "./types.js";
+import { EdmCloudStore } from "./store/edm-store.js";
+import type { KanbanUpdateParams, KanbanQueryParams, EdmQueryParams } from "./types.js";
 import { loadTemplate } from "./templates/loader.js";
+import { handleEdmSend, handleEdmTrack, handleEdmQuery } from "./tools/edm-handler.js";
 
 const plugin = {
   id: "claw-kanban",
@@ -10,10 +12,83 @@ const plugin = {
 
   // Make register purely synchronous, no async/await
   register(api: any) {
-    const pluginConfig = (api.pluginConfig ?? {}) as { apiKey?: string; cloudApiEndpoint?: string };
+    const pluginConfig = (api.pluginConfig ?? {}) as { apiKey?: string; cloudApiEndpoint?: string; resendApiKey?: string };
+    const manifestTools = require("../openclaw.plugin.json").tools;
 
+    // --- EDM tools (Resend API key required) ---
+    const resendKey = pluginConfig.resendApiKey?.trim();
+    const edmStore = pluginConfig.apiKey?.trim()
+      ? new EdmCloudStore(
+          pluginConfig.apiKey.trim(),
+          pluginConfig.cloudApiEndpoint?.trim() ?? "https://webkanbanforopenclaw.vercel.app/api/v1"
+        )
+      : null;
+
+    api.registerTool({
+      name: "edm_send",
+      description: "Send a marketing email via Resend (supports batch)",
+      parameters: manifestTools.edm_send.parameters,
+      async execute(_id: string, params: { to: string; from: string; subject: string; html: string }) {
+        if (!resendKey) {
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                success: false,
+                message: "Resend API key not configured. Set plugins.entries.claw-kanban.config.resendApiKey in your settings and restart."
+              })
+            }]
+          };
+        }
+        try {
+          const result = await handleEdmSend(resendKey, params, edmStore);
+          return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        } catch (error: any) {
+          return { content: [{ type: "text", text: `Error: ${error.message}` }] };
+        }
+      },
+    });
+
+    api.registerTool({
+      name: "edm_track",
+      description: "Refresh delivery status for a campaign by polling Resend",
+      parameters: manifestTools.edm_track.parameters,
+      async execute(_id: string, params: { campaignId: string }) {
+        if (!resendKey) {
+          return { content: [{ type: "text", text: JSON.stringify({ success: false, message: "Resend API key not configured." }) }] };
+        }
+        if (!edmStore) {
+          return { content: [{ type: "text", text: JSON.stringify({ success: false, message: "Cloud API key not configured. Campaign tracking requires apiKey." }) }] };
+        }
+        try {
+          const result = await handleEdmTrack(resendKey, params.campaignId, edmStore);
+          return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        } catch (error: any) {
+          return { content: [{ type: "text", text: `Error: ${error.message}` }] };
+        }
+      },
+    });
+
+    api.registerTool({
+      name: "edm_query",
+      description: "Query EDM campaigns — list campaigns, get stats, filter recipients",
+      parameters: manifestTools.edm_query.parameters,
+      async execute(_id: string, params: EdmQueryParams) {
+        if (!edmStore) {
+          return { content: [{ type: "text", text: JSON.stringify({ success: false, message: "Cloud API key not configured. Campaign queries require apiKey." }) }] };
+        }
+        try {
+          const result = await handleEdmQuery(params, edmStore);
+          return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        } catch (error: any) {
+          return { content: [{ type: "text", text: `Error: ${error.message}` }] };
+        }
+      },
+    });
+
+    // --- Kanban tools (require apiKey) ---
     if (!pluginConfig.apiKey?.trim()) {
-      console.warn("[claw-kanban] apiKey is required. Configure plugins.entries.claw-kanban.config.apiKey and restart.");
+      console.warn("[claw-kanban] apiKey not set — kanban tools disabled. EDM tools still available.");
       return;
     }
 
@@ -22,11 +97,6 @@ const plugin = {
       pluginConfig.cloudApiEndpoint?.trim() ?? "https://webkanbanforopenclaw.vercel.app/api/v1"
     );
     console.log("[claw-kanban] Cloud mode: syncing to Claw Kanban Cloud.");
-
-    // Load manifest tools synchronously since import attributes (with { type: "json" }) 
-    // allow us to import JSON synchronously in many bundlers, or we can use require if needed.
-    // For Tsup/Node, synchronous require of JSON is safest.
-    const manifestTools = require("../openclaw.plugin.json").tools;
 
     api.registerTool({
       name: "kanban_update",
@@ -114,6 +184,12 @@ You have access to a \`kanban_update\` tool for tracking your work on a visual K
 Whenever your task produces a report, article, analysis, or any document:
 - You MUST save it to the local file system first.
 - You MUST attach it via the \`artifacts\` array in your final \`kanban_update(action="complete")\` call.
+
+### Task Type
+When creating a task, set \`taskType\` to categorize it:
+- **SEO tasks** (keyword research, content optimization, site audits, ranking analysis, etc.): pass \`taskType="seo"\`
+- **EDM tasks** (email campaign creation, sending marketing emails, delivery tracking, etc.): pass \`taskType="edm"\`
+- **Other tasks**: omit \`taskType\` or pass \`taskType="general"\`
 
 ### Template Hint
 If a matching template exists (e.g. "keyword-research", "competitor-analysis", "on-page-seo-auditor", "seo-campaign", "sitemap-gap-analyzer"), pass \`template="<exact-name>"\` in the create call to auto-populate subtasks.`

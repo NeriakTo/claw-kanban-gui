@@ -86,6 +86,7 @@ export class BoardStore {
       progress: params.progress ?? 0,
       tags: params.tags ?? [],
       subtasks: params.subtasks ?? [],
+      taskType: params.taskType ?? "general",
       sessionId: params.sessionId ?? null,
       source: "agent",
       result: null,

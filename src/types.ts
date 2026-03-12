@@ -18,6 +18,10 @@ export const COLUMN_LABELS: Record<Column, string> = {
   failed: "Failed",
 };
 
+// ─── Task Type ───
+
+export type TaskType = 'general' | 'seo' | 'edm';
+
 // ─── Task Log ───
 
 export interface TaskLog {
@@ -42,6 +46,9 @@ export interface Task {
   progress: number; // 0–100
   tags: string[];
   subtasks: Subtask[];
+
+  // Task type
+  taskType: TaskType;
 
   // OpenClaw linkage
   sessionId: string | null; // which lobster session spawned this
@@ -105,6 +112,7 @@ export interface KanbanUpdateParams {
   result?: string;
   logMessage?: string;
   template?: string;
+  taskType?: TaskType;
   artifacts?: Array<{ filename: string; type: string; localPath?: string; url?: string }>;
 }
 
@@ -113,5 +121,51 @@ export interface KanbanQueryParams {
   column?: Column | "all";
   taskId?: string;
   keyword?: string;
+  limit?: number;
+  taskType?: TaskType;
+}
+
+// ─── EDM Campaign ───
+
+export interface Campaign {
+  id: string;
+  subject: string;
+  fromAddress: string;
+  htmlSnapshot: string;
+  tags: string[];
+  totalRecipients: number;
+  createdAt: string;
+  updatedAt: string;
+  stats: CampaignStats;
+}
+
+export interface CampaignRecipient {
+  emailId: string;
+  to: string;
+  lastEvent: string;
+  lastEventAt: string | null;
+  createdAt: string;
+}
+
+export interface CampaignStats {
+  total: number;
+  sent: number;
+  delivered: number;
+  opened: number;
+  clicked: number;
+  bounced: number;
+  complained: number;
+  failed: number;
+  deliveryRate: number;
+  openRate: number;
+  clickRate: number;
+  bounceRate: number;
+}
+
+export interface EdmQueryParams {
+  query: "list" | "detail" | "stats" | "filter";
+  campaignId?: string;
+  filterEvent?: string;
+  exclude?: boolean;
   limit?: number;
 }

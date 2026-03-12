@@ -1,4 +1,4 @@
-import type { Task, KanbanUpdateParams, KanbanQueryParams } from '../types';
+import type { Task, KanbanUpdateParams, KanbanQueryParams, TaskType } from '../types';
 
 const MAX_UPLOAD_RETRIES = 2;
 const RETRY_DELAY_MS = 1000;
@@ -218,6 +218,7 @@ export class CloudBoardStore {
       progress: cloudTask.progress,
       tags: cloudTask.tags || [],
       subtasks: cloudTask.subtasks || [],
+      taskType: (cloudTask.task_type as TaskType) || 'general',
       sessionId: cloudTask.session_id || null,
       source: cloudTask.source || 'agent',
       result: cloudTask.result || null,
@@ -235,6 +236,7 @@ export class CloudBoardStore {
     if (params.taskId) searchParams.set('taskId', params.taskId);
     if (params.keyword) searchParams.set('keyword', params.keyword);
     if (params.limit) searchParams.set('limit', String(params.limit));
+    if (params.taskType) searchParams.set('taskType', params.taskType);
 
     const url = `${this.endpoint}/tasks?${searchParams.toString()}`;
     const response = await fetch(url, {
@@ -249,7 +251,7 @@ export class CloudBoardStore {
       throw new Error(`Failed to query tasks: ${response.status} ${errText}`);
     }
 
-    const result = await response.json();
+    const result = (await response.json()) as Record<string, any>;
 
     // Single task detail
     if (params.taskId || params.query === 'detail') {

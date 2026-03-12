@@ -18,12 +18,19 @@
         "type": "string",
         "description": "The endpoint for the Claw Kanban Cloud API.",
         "default": "https://webkanbanforopenclaw.vercel.app/api/v1"
+      },
+      "resendApiKey": {
+        "type": "string",
+        "description": "Your Resend API key for sending marketing emails. Get one at resend.com/api-keys"
       }
     }
   },
   "skills": [
     "skills/kanban-manage",
     "skills/kanban-report",
+    "skills/seo-guide",
+    "skills/edm-campaign",
+    "skills/edm-report",
     "skills/seo-executor",
     "skills/keyword-research",
     "skills/competitor-analysis",
@@ -85,6 +92,11 @@
             },
             "description": "Subtask checklist"
           },
+          "taskType": {
+            "type": "string",
+            "enum": ["general", "seo", "edm"],
+            "description": "Task type: 'seo' for SEO tasks, 'edm' for email marketing tasks, 'general' for others (default: general)"
+          },
           "result": {
             "type": "string",
             "description": "Final result or output summary when completing"
@@ -114,6 +126,54 @@
         "required": ["action"]
       }
     },
+    "edm_send": {
+      "description": "Send a marketing email via Resend (supports batch). Automatically creates a campaign record for tracking.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "to": { "type": "string", "description": "Recipient email address (comma-separated for multiple)" },
+          "from": { "type": "string", "description": "Sender (e.g. 'Brand <hello@brand.com>')" },
+          "subject": { "type": "string", "description": "Email subject line" },
+          "html": { "type": "string", "description": "Full HTML email content" }
+        },
+        "required": ["to", "from", "subject", "html"]
+      }
+    },
+    "edm_track": {
+      "description": "Refresh delivery status for a campaign by polling Resend",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "campaignId": { "type": "string", "description": "Campaign ID to track" }
+        },
+        "required": ["campaignId"]
+      }
+    },
+    "edm_query": {
+      "description": "Query EDM campaigns — list campaigns, get stats, filter recipients",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "enum": ["list", "detail", "stats", "filter"],
+            "description": "Query type"
+          },
+          "campaignId": { "type": "string", "description": "Campaign ID (required for detail/stats/filter)" },
+          "filterEvent": {
+            "type": "string",
+            "enum": ["sent", "delivered", "opened", "clicked", "bounced", "complained", "failed"],
+            "description": "For filter query: show recipients with this status"
+          },
+          "exclude": {
+            "type": "boolean",
+            "description": "For filter query: if true, show recipients who did NOT reach this status"
+          },
+          "limit": { "type": "number", "description": "Max results (default: 50)" }
+        },
+        "required": ["query"]
+      }
+    },
     "kanban_query": {
       "description": "Query the Kanban board — list tasks, get stats, search",
       "parameters": {
@@ -140,6 +200,11 @@
           "limit": {
             "type": "number",
             "description": "Max results (default: 20)"
+          },
+          "taskType": {
+            "type": "string",
+            "enum": ["general", "seo", "edm"],
+            "description": "Filter tasks by type"
           }
         },
         "required": ["query"]

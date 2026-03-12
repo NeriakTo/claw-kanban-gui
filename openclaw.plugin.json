@@ -97,6 +97,10 @@
             "enum": ["general", "seo", "edm"],
             "description": "Task type: 'seo' for SEO tasks, 'edm' for email marketing tasks, 'general' for others (default: general)"
           },
+          "campaignId": {
+            "type": "string",
+            "description": "Campaign ID returned by edm_send. Pass this when completing an EDM task to link it with the campaign record."
+          },
           "result": {
             "type": "string",
             "description": "Final result or output summary when completing"

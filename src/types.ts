@@ -113,6 +113,7 @@ export interface KanbanUpdateParams {
   logMessage?: string;
   template?: string;
   taskType?: TaskType;
+  campaignId?: string;
   artifacts?: Array<{ filename: string; type: string; localPath?: string; url?: string }>;
 }
 

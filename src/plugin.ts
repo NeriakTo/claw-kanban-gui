@@ -135,6 +135,7 @@ const plugin = {
             } else if (params.action === "fail") {
               updateParams.column = "failed";
             }
+            // campaignId is already in updateParams from the spread, CloudBoardStore.updateTask sends it to the API
             const result = await store.updateTask(params.taskId, updateParams);
             return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
           }
@@ -190,6 +191,12 @@ When creating a task, set \`taskType\` to categorize it:
 - **SEO tasks** (keyword research, content optimization, site audits, ranking analysis, etc.): pass \`taskType="seo"\`
 - **EDM tasks** (email campaign creation, sending marketing emails, delivery tracking, etc.): pass \`taskType="edm"\`
 - **Other tasks**: omit \`taskType\` or pass \`taskType="general"\`
+
+### EDM Workflow — Campaign Linking
+When working on an EDM task (taskType="edm"):
+1. After calling \`edm_send\`, the response includes a \`campaignId\`.
+2. Save this \`campaignId\` — you MUST pass it when completing the task: \`kanban_update(action="complete", taskId="<id>", campaignId="<campaignId>", result="<summary>")\`
+3. This links the task to the campaign record so the dashboard can display real delivery stats (recipients, open rate, click rate, etc.) instead of relying on text parsing.
 
 ### Template Hint
 If a matching template exists (e.g. "keyword-research", "competitor-analysis", "on-page-seo-auditor", "seo-campaign", "sitemap-gap-analyzer"), pass \`template="<exact-name>"\` in the create call to auto-populate subtasks.`

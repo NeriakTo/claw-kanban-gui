@@ -1,101 +1,101 @@
-# 🦞 Claw Kanban - A Visual Task Board for your OpenClaw Agent
+# 🦞 Claw Kanban
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-Plugin-ff5a36.svg)](https://openclaw.ai)
+<div align="center">
+  <h3>The AI Marketing Command Center for OpenClaw</h3>
+  <p>Watch your lobster run SEO & EDM campaigns while you monitor everything on a live, real-time Kanban board.</p>
 
-Claw Kanban provides a real-time, visual Kanban board to track the tasks your OpenClaw agent is working on. See what's in progress, what's done, and what went wrong, all from a cloud-based web dashboard at [webkanbanforopenclaw.vercel.app](https://webkanbanforopenclaw.vercel.app).
-
-![Screenshot of Claw Kanban UI](https://raw.githubusercontent.com/your-username/claw-kanban/main/docs/screenshot.png) 
-*Note: You should replace the above screenshot URL with your own.*
+  [![Version: 0.1.1](https://img.shields.io/badge/npm-v0.1.1-blue.svg)](https://www.npmjs.com/package/claw-kanban)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-Plugin-ff5a36.svg)](https://openclaw.ai)
+</div>
 
 ---
 
-## ✨ Features
+Equip your OpenClaw agent with the ultimate marketing plugin. Bulk-generate EEAT-compliant SEO content and automate Resend email campaigns—all while monitoring every task on a live, real-time Kanban board.
 
--   🦞 **Visual Task Tracking**: A web-based UI to see what your AI agent is doing in real-time.
--   🤖 **Automatic Reporting**: The agent uses its skills to automatically create, update, and complete task cards as it works.
--   📊 **Clear Progress Overview**: Classic Kanban columns (Backlog, In Progress, Done, Failed) to quickly assess the state of all tasks.
--   ✍️ **Detailed Progress Logs**: Drill down into tasks to see a timestamped log of the key steps and intermediate results the agent has produced.
--   📱 **Responsive Design**: The UI works beautifully on both desktop and mobile browsers.
+![Claw Kanban Dashboard](docs/screenshot-1.png)
 
-## 🎯 Who is this for?
+## ✨ Core Pillars
 
-This plugin is designed for anyone using OpenClaw agents and wanting to track task progress from anywhere. All task data syncs to the cloud, so you can view your Kanban board from any device at [webkanbanforopenclaw.vercel.app](https://webkanbanforopenclaw.vercel.app).
+### 1. The Core Engine: A Visual Kanban Board
+Before executing massive marketing campaigns, you need observability. As your OpenClaw agent writes articles or sends emails, it updates this Kanban board in real-time. 
+- Track subtasks
+- Read detailed progress logs
+- Download generated artifacts (Markdown/HTML files) directly from the cloud dashboard.
+
+### 2. Pillar 1: SEO Engine (From sitemap to published content)
+Equip your agent with expert SEO skills. It can analyze your sitemap to find content gaps, perform SERP competitor analysis, and bulk-generate high-quality, EEAT-compliant markdown articles ready for your blog.
+- **Sitemap Gap Analyzer**: Crawls your existing content to find high-ROI keywords you are missing.
+- **Competitor Intel**: Analyzes SERP rivals and reverse-engineers their content structures.
+- **EEAT Content**: Generates deep, factual articles with proper LSI keywords and metadata.
+- **On-Page Audits**: Scans your live URLs and provides actionable checklists to improve ranking.
+
+### 3. Pillar 2: EDM Engine (Automated Email Marketing)
+Connect your Resend API key and your lobster transforms into a full-stack email marketer.
+- **AI Email Design**: Auto-generates responsive, inline-CSS HTML emails matching your brand.
+- **Local CRM Sync**: Maintains `audience.json` locally to track who was emailed and who bounced.
+- **Live Tracking**: Polls Resend to show open rates and delivery stats right on the task card.
+
+---
 
 ## 🚀 Installation
 
-1.  **Download the latest release:** Go to the [GitHub Releases](https://github.com/Joeyzzyy/webkanbanforopenclaw/releases) page and download the latest `claw-kanban-vX.Y.Z.tgz` file.
+**One command.** Your lobster gets the `claw-kanban` plugin and can start syncing tasks.
 
-2.  **Install the plugin:** Open your terminal and run the following command, replacing `<path_to_tgz>` with the actual path to the file you downloaded.
-    ```bash
-    openclaw plugins install <path_to_tgz>
-    ```
+```bash
+openclaw plugins install claw-kanban
+```
 
-3.  **Restart the Gateway:** For the plugin to be loaded, you need to restart your OpenClaw gateway.
-    ```bash
-    openclaw gateway restart
-    ```
+*(Note: Requires Node.js 22+ and an active OpenClaw setup)*
 
-That's it! The plugin is now installed.
+## ⚙️ Quick Start & Configuration
 
-## ⚙️ Usage
+1. **Log in with Google:** Visit our cloud dashboard at **[webkanbanforopenclaw.vercel.app](https://webkanbanforopenclaw.vercel.app)** and sign in.
+2. **Get your API key:** Click 'Get your keys' in the dashboard. Copy the key (starts with `ck_sk_`).
+3. **Give the key to your lobster:** You can configure the API Key by telling your agent:
+   > "Please save my Claw Kanban API Key: `ck_sk_...`"
 
-### Configuration (Required)
+Or, manually add it to your `~/.openclaw/openclaw.json` (or `~/.claw-kanban/config.json`):
 
-The plugin requires an API Key to function. Configure your API Key in the plugin config—see **[CLOUD_USAGE.md](CLOUD_USAGE.md)** for setup instructions.
+```json
+{
+  "plugins": {
+    "entries": {
+      "claw-kanban": {
+        "enabled": true,
+        "config": {
+          "apiKey": "ck_sk_your_key_here",
+          "resendApiKey": "re_your_resend_key_here"
+        }
+      }
+    }
+  }
+}
+```
 
-### Accessing the Dashboard
+*Don't forget to restart your OpenClaw gateway (`openclaw gateway restart`) after manually changing configurations.*
 
-Once configured and the gateway has restarted, your agent's tasks will sync to the cloud. View them at:
+## 🗣️ Just talk to your lobster.
 
-**[https://webkanbanforopenclaw.vercel.app/dashboard](https://webkanbanforopenclaw.vercel.app/dashboard)**
+No complex UI to learn. Just tell OpenClaw what you want to achieve, and the plugin automatically manages the workflow on your Kanban board.
 
-### Interacting with your Agent
+**SEO Example:**
+> "Read my sitemap at https://example.com/sitemap.xml and find 5 high-ROI keyword gaps. Write an EEAT-compliant article for the best one."
 
-You don't need to do anything special! Just assign tasks to your OpenClaw agent as you normally would.
+**EDM Example:**
+> "Design a launch email for our new 'Pro Plan' using our brand colors. Send it to the audience list in my local folder."
 
-The agent is equipped with the `kanban-manage` skill. It will automatically:
--   **Create a new card** in "In Progress" when you give it a new, non-trivial task.
--   **Add log entries** to the card as it makes progress (e.g., after performing a web search or generating code).
--   **Move the card** to "Done" or "Failed" when the task is complete, along with a final result summary.
-
-**Example Task:** *"Hey, could you research the top 3 sci-fi movies of the last decade and give me a brief summary of each?"*
-
-The agent will create a card for this, and you'll see its research progress logged on the Kanban board in real-time.
+![Live Tracking](docs/screenshot-2.png)
 
 ## 💖 Acknowledgements & Credits
 
-This plugin integrates and builds upon the excellent [SEO & GEO Skills Library](https://github.com/aaron-he-zhu/seo-geo-claude-skills) by Aaron Zhu. We have incorporated several of their powerful SEO skills (like Keyword Research, On-Page SEO Auditor, Sitemap Gap Analyzer, and Competitor Analysis) directly into Claw Kanban to provide a complete, closed-loop SEO workflow. We've also included a custom `markdown-to-html` skill to seamlessly turn those SEO Markdown drafts into publish-ready webpages.
+This plugin integrates and builds upon the excellent [SEO & GEO Skills Library](https://github.com/aaron-he-zhu/seo-geo-claude-skills) by Aaron Zhu. We have incorporated several of their powerful SEO skills directly into Claw Kanban to provide a complete, closed-loop SEO workflow. We've also included a custom `markdown-to-html` skill to seamlessly turn those SEO Markdown drafts into publish-ready webpages.
 
-We extend our gratitude to the original author for open-sourcing these high-quality skills. Our plugin merges these capabilities with a visual task management board to track the agent's progress as it executes these SEO workflows.
+We extend our gratitude to the original author for open-sourcing these high-quality skills under MIT. Our plugin merges these capabilities with a visual task management board to track the agent's progress as it executes these SEO workflows.
 
 ## 📜 License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
-## 💻 For Developers
-
-Interested in contributing? Here’s how to get started:
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/Joeyzzyy/webkanbanforopenclaw.git
-    cd claw-kanban
-    ```
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-3.  **Start the development server:** This will watch for changes and rebuild automatically.
-    ```bash
-    npm run dev
-    ```
-4.  **Link for local testing:** To test your local changes without creating a `.tgz` file every time, you can link your project directory to your OpenClaw extensions folder.
-    ```bash
-    # Plugin ID is claw-kanban
-    ln -s "$(pwd)" ~/.openclaw/extensions/claw-kanban 
-    ```
-    After linking, you'll still need to restart the gateway (`openclaw gateway restart`) to see changes.
-
 ---
-*This README was co-authored by an OpenClaw agent.*
+*Built for OpenClaw. Not affiliated or endorsed by the official OpenClaw team.*

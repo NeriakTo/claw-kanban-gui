@@ -2,7 +2,7 @@
   "$schema": "https://docs.openclaw.ai/schemas/plugin.json",
   "id": "claw-kanban",
   "name": "claw-kanban",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Visual Kanban board for managing your lobster's tasks. Track what your OpenClaw is doing, has done, and plans to do — all in one board.",
   "author": "seenos",
   "license": "MIT",
@@ -212,6 +212,16 @@
           }
         },
         "required": ["query"]
+      }
+    },
+    "kanban_config_save": {
+      "description": "Save API keys persistently to the global local configuration",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "apiKey": { "type": "string", "description": "Cloud Kanban API Key" },
+          "resendApiKey": { "type": "string", "description": "Resend API Key for EDM" }
+        }
       }
     }
   }

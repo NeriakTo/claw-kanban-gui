@@ -3,6 +3,10 @@ import { EdmCloudStore } from "./store/edm-store.js";
 import type { KanbanUpdateParams, KanbanQueryParams, EdmQueryParams } from "./types.js";
 import { loadTemplate } from "./templates/loader.js";
 import { handleEdmSend, handleEdmTrack, handleEdmQuery } from "./tools/edm-handler.js";
+import { getMergedConfig, saveGlobalConfig } from "./config.js";
+import os from "node:os";
+import path from "node:path";
+import fsNode from "node:fs";
 
 const plugin = {
   id: "claw-kanban",
@@ -12,8 +16,26 @@ const plugin = {
 
   // Make register purely synchronous, no async/await
   register(api: any) {
-    const pluginConfig = (api.pluginConfig ?? {}) as { apiKey?: string; cloudApiEndpoint?: string; resendApiKey?: string };
+    const rawConfig = (api.pluginConfig ?? {}) as { apiKey?: string; cloudApiEndpoint?: string; resendApiKey?: string };
+    const pluginConfig = getMergedConfig(rawConfig);
     const manifestTools = require("../openclaw.plugin.json").tools;
+
+    // --- Provide a config save tool to update the global config persistently ---
+    api.registerTool({
+      name: "kanban_config_save",
+      description: "Save API keys persistently so the user doesn't have to re-enter them",
+      parameters: {
+        type: "object",
+        properties: {
+          apiKey: { type: "string" },
+          resendApiKey: { type: "string" }
+        }
+      },
+      async execute(_id: string, params: any) {
+        saveGlobalConfig(params);
+        return { content: [{ type: "text", text: "Configuration saved globally." }] };
+      }
+    });
 
     // --- EDM tools (Resend API key required) ---
     const resendKey = pluginConfig.resendApiKey?.trim();

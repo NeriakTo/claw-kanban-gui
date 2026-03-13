@@ -11,13 +11,15 @@ You can help the user create and send professional marketing emails using the `e
 
 ### Step 1 — Load or Collect Branding
 
-Check if a brand config file exists at `{cwd}/.claw-kanban/edm/brand.json` (use the Read tool on this path in the current working directory).
+Check if a brand config file exists in the following order (using the Read tool):
+1. Local project override: `{cwd}/.claw-kanban/edm/brand.json`
+2. Global default: `~/.claw-kanban/edm/brand.json` (use the current user's home directory)
 
-**If the file exists and is complete**, read it and show a brief summary to the user:
+**If a file exists and is complete**, read it and show a brief summary to the user:
 > "I found your brand config: **{productName}** — {tagline}. Sender: {senderName} <{senderEmail}>."
 > "Shall we proceed with this branding, or would you like to update anything?"
 
-**If the file is missing or incomplete**, collect the following from the user one by one (or in a grouped question):
+**If no config is found**, collect the following from the user one by one (or in a grouped question):
 
 | Field | Description | Example |
 |-------|-------------|---------|
@@ -30,7 +32,10 @@ Check if a brand config file exists at `{cwd}/.claw-kanban/edm/brand.json` (use 
 | `footerText` | Email footer text | © 2026 Acme Inc. All rights reserved. |
 | `websiteUrl` | Main website URL | https://acme.com |
 
-Once collected, save the config to `{cwd}/.claw-kanban/edm/brand.json` as JSON. Create the directory if it doesn't exist.
+Once collected, ask the user if they want to save this branding globally as their default, or just for this specific project.
+- If **Global**: save to `~/.claw-kanban/edm/brand.json`
+- If **Project only**: save to `{cwd}/.claw-kanban/edm/brand.json`
+Create the directory if it doesn't exist.
 
 **brand.json schema:**
 ```json
@@ -53,7 +58,20 @@ Ask the user:
 - Who is the **target audience**?
 - What is the **key message or CTA** (call to action)?
 - Any **specific content** to include? (text, links, images, discount codes, etc.)
-- **Recipient email(s)** — comma-separated if multiple.
+- **Recipient email(s)** — The user might provide a few emails directly, or they might ask you to load a mailing list file.
+
+#### Handling Mailing Lists (Audience Data)
+If the user wants to send to a list of emails, or mentions an audience file, check if an audience list exists at:
+- `{cwd}/.claw-kanban/edm/audience.csv` or `{cwd}/.claw-kanban/edm/audience.json`
+
+If the user provides you with a new list of emails (via text or file upload), save/update this list in `{cwd}/.claw-kanban/edm/audience.json` to act as the single source of truth for their local CRM/Mailing list.
+
+**audience.json schema example:**
+```json
+[
+  { "email": "user@example.com", "name": "Alice", "status": "active", "lastSent": "2026-03-13" }
+]
+```
 
 ### Step 3 — Generate HTML Email
 
@@ -91,10 +109,13 @@ edm_send(
 
 Report the result back to the user. If it succeeds, show the email IDs and the **Campaign ID**.
 
-### Step 6 — Campaign Tracking
+### Step 6 — Campaign Tracking & Local Audience Sync
 
 After a successful send, inform the user:
 > "Your campaign has been recorded with ID `{campaignId}`. You can check delivery status anytime with `edm_track`."
+
+**IMPORTANT - Local Audience State Update:** 
+If you used a mailing list from `{cwd}/.claw-kanban/edm/audience.json`, you MUST update that file locally to reflect the campaign send. For example, update the `lastSent` date or add the `campaignId` to the users' history, so the user has an up-to-date local CRM record synced with what went out.
 
 ### Step 7 — Initial Status Check
 

@@ -1,6 +1,6 @@
 {
   "name": "claw-kanban",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenClaw plugin — visual Kanban board for managing your lobster's tasks",
   "type": "module",
   "main": "dist/index.js",

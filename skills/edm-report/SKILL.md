@@ -34,6 +34,8 @@ If no campaigns exist, inform the user and suggest using the `edm-campaign` skil
 
 Ask the user which campaign to inspect (or auto-select the most recent one). Then call `edm_track(campaignId)` to poll Resend for the latest delivery events.
 
+**IMPORTANT - Local CRM Sync:** After pulling the latest stats, if you find emails that bounced or complained, you MUST update the user's local mailing list (typically located at `{cwd}/.claw-kanban/edm/audience.json`). Mark those emails with `status: "bounced"` or `status: "unsubscribed"` so the user doesn't accidentally email them again in the next campaign.
+
 #### Step 3 — Show Analytics
 
 Call `edm_query(query="stats", campaignId="...")` and present the stats clearly:

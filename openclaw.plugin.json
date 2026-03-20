@@ -2,23 +2,23 @@
   "$schema": "https://docs.openclaw.ai/schemas/plugin.json",
   "id": "claw-kanban",
   "name": "claw-kanban",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Visual Kanban board for managing your lobster's tasks. Track what your OpenClaw is doing, has done, and plans to do — all in one board.",
   "author": "seenos",
   "license": "MIT",
-  "homepage": "https://github.com/Joeyzzyy/webkanbanforopenclaw",
+  "homepage": "https://teammate.work",
   "acknowledgements": "Contains modified SEO & GEO skills originally created by Aaron Zhu at https://github.com/aaron-he-zhu/seo-geo-claude-skills",
   "configSchema": {
     "type": "object",
     "properties": {
       "apiKey": {
         "type": "string",
-        "description": "Your API key for the Claw Kanban Cloud service. Get one at webkanbanforopenclaw.vercel.app"
+        "description": "Your API key for the Claw Kanban Cloud service. Get one at teammate.work"
       },
       "cloudApiEndpoint": {
         "type": "string",
         "description": "The endpoint for the Claw Kanban Cloud API.",
-        "default": "https://webkanbanforopenclaw.vercel.app/api/v1"
+        "default": "https://www.teammate.work/api/v1"
       },
       "resendApiKey": {
         "type": "string",
@@ -37,7 +37,8 @@
     "skills/competitor-analysis",
     "skills/on-page-seo-auditor",
     "skills/sitemap-gap-analyzer",
-    "skills/markdown-to-html"
+    "skills/markdown-to-html",
+    "skills/video-clip"
   ],
   "tools": {
     "kanban_update": {
@@ -224,6 +225,99 @@
           "apiKey": { "type": "string", "description": "Cloud Kanban API Key" },
           "resendApiKey": { "type": "string", "description": "Resend API Key for EDM" }
         }
+      }
+    },
+    "video_clip": {
+      "description": "Process, transcribe, analyze, or split a video into clips. Use action='process' for the full pipeline (upload → transcribe → analyze → split).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["process", "transcribe", "analyze", "split", "retranscribe"],
+            "description": "Action to perform: 'process' runs the full pipeline, others run individual steps"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Local path to the video file (required for 'process')"
+          },
+          "storagePath": {
+            "type": "string",
+            "description": "Cloud storage path of an already-uploaded video (for 'transcribe')"
+          },
+          "fileName": {
+            "type": "string",
+            "description": "Original filename (for 'transcribe')"
+          },
+          "keywords": {
+            "type": "string",
+            "description": "Optional keywords/terminology to improve transcription accuracy"
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID (for 'analyze', 'split', 'retranscribe')"
+          },
+          "segments": {
+            "type": "array",
+            "description": "Transcript segments (for 'analyze')",
+            "items": {
+              "type": "object",
+              "properties": {
+                "start": { "type": "number" },
+                "end": { "type": "number" },
+                "text": { "type": "string" }
+              }
+            }
+          },
+          "videoSegments": {
+            "type": "array",
+            "description": "Video segments to split (for 'split')",
+            "items": {
+              "type": "object",
+              "properties": {
+                "start": { "type": "number" },
+                "end": { "type": "number" },
+                "title": { "type": "string" },
+                "segmentId": { "type": "string" }
+              }
+            }
+          },
+          "videoDuration": {
+            "type": "number",
+            "description": "Total video duration in seconds (for 'analyze')"
+          },
+          "videoPath": {
+            "type": "string",
+            "description": "URL or path to the source video (for 'split')"
+          }
+        },
+        "required": ["action"]
+      }
+    },
+    "video_query": {
+      "description": "Query video projects — list all projects, get project detail with clips, or download clips to local disk",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "enum": ["list", "detail", "download"],
+            "description": "Query type"
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID (required for detail/download)"
+          },
+          "outputDir": {
+            "type": "string",
+            "description": "Local directory to save downloaded clips (default: ./clips)"
+          },
+          "segmentIndex": {
+            "type": "number",
+            "description": "Download only a specific segment by index (0-based)"
+          }
+        },
+        "required": ["query"]
       }
     }
   }

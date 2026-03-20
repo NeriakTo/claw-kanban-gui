@@ -170,3 +170,58 @@ export interface EdmQueryParams {
   exclude?: boolean;
   limit?: number;
 }
+
+// ─── Video Types ───
+
+export interface TranscriptSegment {
+  start: number;
+  end: number;
+  text: string;
+}
+
+export interface VideoSegment {
+  title: string;
+  summary: string;
+  start: number;
+  end: number;
+  segmentId?: string;
+  storage_path?: string;
+  publicUrl?: string;
+  downloadUrl?: string;
+}
+
+export interface VideoProject {
+  id: string;
+  title: string;
+  duration: number;
+  created_at: string;
+  storage_path: string;
+  upload_status: string;
+  publicUrl?: string;
+}
+
+export interface VideoProjectDetail {
+  project: VideoProject & { transcript?: TranscriptSegment[] };
+  segments: VideoSegment[];
+  publicUrl?: string;
+}
+
+export interface VideoClipParams {
+  action: 'process' | 'transcribe' | 'analyze' | 'split' | 'retranscribe';
+  filePath?: string;
+  storagePath?: string;
+  fileName?: string;
+  keywords?: string;
+  projectId?: string;
+  segments?: TranscriptSegment[];
+  videoSegments?: { start: number; end: number; title: string; segmentId?: string }[];
+  videoDuration?: number;
+  videoPath?: string;
+}
+
+export interface VideoQueryParams {
+  query: 'list' | 'detail' | 'download';
+  projectId?: string;
+  outputDir?: string;
+  segmentIndex?: number;
+}

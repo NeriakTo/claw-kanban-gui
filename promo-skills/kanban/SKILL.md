@@ -16,7 +16,7 @@ This skill is a **workflow guide** for your OpenClaw agent. It teaches the agent
 > ```bash
 > openclaw plugins install claw-kanban
 > ```
-> *Get your free Dashboard API Key to see the visualization at: **https://webkanbanforopenclaw.vercel.app***
+> *Get your free Dashboard API Key to see the visualization at: **https://www.teammate.work***
 
 ### How This Workflow Operates
 

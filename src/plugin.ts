@@ -1,8 +1,10 @@
 import { CloudBoardStore } from "./store/cloud-store.js";
 import { EdmCloudStore } from "./store/edm-store.js";
-import type { KanbanUpdateParams, KanbanQueryParams, EdmQueryParams } from "./types.js";
+import { VideoCloudStore } from "./store/video-store.js";
+import type { KanbanUpdateParams, KanbanQueryParams, EdmQueryParams, VideoClipParams, VideoQueryParams } from "./types.js";
 import { loadTemplate } from "./templates/loader.js";
 import { handleEdmSend, handleEdmTrack, handleEdmQuery } from "./tools/edm-handler.js";
+import { handleVideoClip, handleVideoQuery } from "./tools/video-handler.js";
 import { getMergedConfig, saveGlobalConfig } from "./config.js";
 import os from "node:os";
 import path from "node:path";
@@ -12,7 +14,7 @@ const plugin = {
   id: "claw-kanban",
   name: "Claw Kanban",
   description:
-    "Visual Kanban board for managing your lobster's tasks. Cloud-only — syncs to webkanbanforopenclaw.vercel.app.",
+    "Visual Kanban board for managing your lobster's tasks. Cloud-only — syncs to teammate.work.",
 
   // Make register purely synchronous, no async/await
   register(api: any) {
@@ -42,7 +44,7 @@ const plugin = {
     const edmStore = pluginConfig.apiKey?.trim()
       ? new EdmCloudStore(
           pluginConfig.apiKey.trim(),
-          pluginConfig.cloudApiEndpoint?.trim() ?? "https://webkanbanforopenclaw.vercel.app/api/v1"
+          pluginConfig.cloudApiEndpoint?.trim() ?? "https://www.teammate.work/api/v1"
         )
       : null;
 
@@ -113,7 +115,7 @@ const plugin = {
     const store = apiKey
       ? new CloudBoardStore(
           apiKey,
-          pluginConfig.cloudApiEndpoint?.trim() ?? "https://webkanbanforopenclaw.vercel.app/api/v1"
+          pluginConfig.cloudApiEndpoint?.trim() ?? "https://www.teammate.work/api/v1"
         )
       : null;
 
@@ -134,7 +136,7 @@ const plugin = {
               type: "text",
               text: JSON.stringify({
                 success: false,
-                message: "Cloud API key not configured. Please ask the user for their Claw Kanban API Key (they can get it at https://webkanbanforopenclaw.vercel.app), then use `kanban_config_save` to save it."
+                message: "Cloud API key not configured. Please ask the user for their Claw Kanban API Key (they can get it at https://www.teammate.work), then use `kanban_config_save` to save it."
               })
             }]
           };
@@ -194,7 +196,7 @@ const plugin = {
               type: "text",
               text: JSON.stringify({
                 success: false,
-                message: "Cloud API key not configured. Please ask the user for their Claw Kanban API Key (they can get it at https://webkanbanforopenclaw.vercel.app), then use `kanban_config_save` to save it."
+                message: "Cloud API key not configured. Please ask the user for their Claw Kanban API Key (they can get it at https://www.teammate.work), then use `kanban_config_save` to save it."
               })
             }]
           };
@@ -209,13 +211,71 @@ const plugin = {
       },
     });
 
+    // --- Video tools (require apiKey) ---
+    const videoStore = apiKey
+      ? new VideoCloudStore(
+          apiKey,
+          pluginConfig.cloudApiEndpoint?.trim() ?? "https://www.teammate.work/api/v1"
+        )
+      : null;
+
+    api.registerTool({
+      name: "video_clip",
+      description: "Process, transcribe, analyze, or split a video into clips",
+      parameters: manifestTools.video_clip.parameters,
+      async execute(_id: string, params: VideoClipParams) {
+        if (!videoStore) {
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                success: false,
+                message: "Cloud API key not configured. Video tools require apiKey. Please ask the user for their Claw Kanban API Key, use `kanban_config_save` to save it, and restart OpenClaw."
+              })
+            }]
+          };
+        }
+        try {
+          const result = await handleVideoClip(videoStore, params);
+          return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        } catch (error: any) {
+          return { content: [{ type: "text", text: `Error: ${error.message}` }] };
+        }
+      },
+    });
+
+    api.registerTool({
+      name: "video_query",
+      description: "Query video projects — list, detail, or download clips",
+      parameters: manifestTools.video_query.parameters,
+      async execute(_id: string, params: VideoQueryParams) {
+        if (!videoStore) {
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                success: false,
+                message: "Cloud API key not configured. Video tools require apiKey. Please ask the user for their Claw Kanban API Key, use `kanban_config_save` to save it, and restart OpenClaw."
+              })
+            }]
+          };
+        }
+        try {
+          const result = await handleVideoQuery(videoStore, params);
+          return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        } catch (error: any) {
+          return { content: [{ type: "text", text: `Error: ${error.message}` }] };
+        }
+      },
+    });
+
     // Auto-inject kanban tracking prompt before every agent run
     api.on('before_agent_start', async (_event: any, _context: any) => {
       let prependContext = `## Claw Kanban — Task Tracking Protocol\n\n`;
 
       if (!store) {
         prependContext += `**⚠️ ACTION REQUIRED**: The Claw Kanban API Key is not configured. 
-Before tracking tasks, you MUST ask the user for their API Key (they can get one at https://webkanbanforopenclaw.vercel.app). 
+Before tracking tasks, you MUST ask the user for their API Key (they can get one at https://www.teammate.work). 
 Once they provide it, use the \`kanban_config_save\` tool to save it, AND TELL THE USER to restart their OpenClaw gateway for it to take effect. Do not attempt to use \`kanban_update\` until configured.\n\n`;
       }
 

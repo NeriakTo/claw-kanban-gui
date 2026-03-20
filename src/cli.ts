@@ -4,7 +4,7 @@
  * claw-kanban CLI
  *
  * Local task management (cloud mode uses kanban_update/kanban_query tools).
- * View your tasks at webkanbanforopenclaw.vercel.app
+ * View your tasks at teammate.work
  *
  * Usage:
  *   claw-kanban add <title> [options]   Create a task
@@ -18,7 +18,9 @@
  */
 
 import { BoardStore, BoardStorage } from "./store/index.js";
+import { VideoCloudStore } from "./store/video-store.js";
 import { SessionCollector } from "./collector/index.js";
+import { getMergedConfig } from "./config.js";
 import type { Column, Subtask } from "./types.js";
 
 const args = process.argv.slice(2);
@@ -79,6 +81,8 @@ async function main() {
       return runDetail(store);
     case "sync":
       return runSync(store, storage);
+    case "video":
+      return runVideo();
     case "help":
     case "--help":
     case "-h":
@@ -394,6 +398,318 @@ async function runSync(store: BoardStore, storage: BoardStorage) {
   console.log(`  Board: ${store.getStats().total} total tasks\n`);
 }
 
+// ─── Video ───
+
+function getVideoStore(): VideoCloudStore {
+  const config = getMergedConfig({});
+  const apiKey = config.apiKey?.trim();
+  if (!apiKey) {
+    console.error("Error: API key not configured.");
+    console.error("Run: claw-kanban video --help  or configure via ~/.claw-kanban/config.json");
+    process.exit(1);
+  }
+  const endpoint = config.cloudApiEndpoint?.trim() ?? "https://www.teammate.work/api/v1";
+  return new VideoCloudStore(apiKey, endpoint);
+}
+
+async function runVideo() {
+  const subcommand = args[1] ?? "help";
+
+  switch (subcommand) {
+    case "process":
+      return runVideoProcess();
+    case "list":
+    case "ls":
+      return runVideoList();
+    case "detail":
+    case "show":
+      return runVideoDetail();
+    case "download":
+      return runVideoDownload();
+    case "delete":
+    case "rm":
+      return runVideoDelete();
+    case "help":
+    case "--help":
+    case "-h":
+      return printVideoHelp();
+    default:
+      console.error(`Unknown video subcommand: ${subcommand}`);
+      printVideoHelp();
+      process.exit(1);
+  }
+}
+
+async function runVideoProcess() {
+  const filePath = args[2];
+  if (!filePath) {
+    console.error("Usage: claw-kanban video process <file> [--keywords '...'] [--output ./clips/]");
+    process.exit(1);
+  }
+
+  const store = getVideoStore();
+  const keywords = getFlag("keywords");
+
+  const progress = (msg: string) => {
+    if (!hasFlag("json")) console.log(`  ${msg}`);
+  };
+
+  if (!hasFlag("json")) console.log("\n🎬 Processing video...\n");
+
+  try {
+    // 1. Upload
+    progress("Step 1/4: Uploading video...");
+    const upload = await store.uploadVideo(filePath, progress);
+
+    // 2. Transcribe
+    progress("Step 2/4: Transcribing audio...");
+    const transcription = await store.transcribe(
+      upload.storagePath,
+      upload.fileName,
+      keywords,
+      progress
+    );
+
+    // 3. Analyze
+    progress("Step 3/4: AI semantic analysis...");
+    const analysis = await store.analyze(
+      transcription.segments,
+      transcription.duration,
+      transcription.projectId,
+      progress
+    );
+
+    // 4. Split
+    progress("Step 4/4: Splitting video into clips...");
+    const splitResult = await store.split(
+      transcription.videoPath,
+      analysis.segments.map((s) => ({
+        start: s.start,
+        end: s.end,
+        title: s.title,
+        segmentId: s.segmentId,
+      })),
+      transcription.projectId,
+      progress
+    );
+
+    // 5. Optional download
+    const outputDir = getFlag("output");
+    if (outputDir) {
+      progress(`Downloading ${splitResult.segments.length} clips to ${outputDir}...`);
+      for (const seg of splitResult.segments) {
+        if (!seg.publicUrl) continue;
+        const safeTitle = (seg.title || "clip").replace(/[^a-zA-Z0-9._-]/g, "_");
+        const outputPath = `${outputDir}/${safeTitle}.mp4`;
+        await store.downloadClip(seg.publicUrl, outputPath, progress);
+      }
+    }
+
+    if (hasFlag("json")) {
+      console.log(JSON.stringify({
+        success: true,
+        projectId: transcription.projectId,
+        clips: splitResult.segments.map((s) => ({ title: s.title, publicUrl: s.publicUrl })),
+      }));
+    } else {
+      console.log(`\n✅ Done! ${splitResult.segments.length} clips created.`);
+      console.log(`   Project ID: ${transcription.projectId}`);
+      for (const seg of splitResult.segments) {
+        console.log(`   🎞️  ${seg.title}`);
+        if (seg.publicUrl) console.log(`      ${seg.publicUrl}`);
+      }
+      console.log();
+    }
+  } catch (error: any) {
+    if (hasFlag("json")) {
+      console.log(JSON.stringify({ success: false, error: error.message }));
+    } else {
+      console.error(`\n❌ Error: ${error.message}\n`);
+    }
+    process.exit(1);
+  }
+}
+
+async function runVideoList() {
+  const store = getVideoStore();
+
+  try {
+    const projects = await store.listProjects();
+
+    if (hasFlag("json")) {
+      console.log(JSON.stringify({ projects }));
+      return;
+    }
+
+    if (projects.length === 0) {
+      console.log("No video projects found.");
+      return;
+    }
+
+    console.log("\n🎬 Video Projects\n");
+    for (const p of projects) {
+      const dur = p.duration ? `${Math.round(p.duration)}s` : "?";
+      const date = new Date(p.created_at).toLocaleDateString();
+      console.log(`  ${p.title}  (${dur})  ${date}  [${p.id}]`);
+    }
+    console.log(`\n${projects.length} project(s)\n`);
+  } catch (error: any) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+async function runVideoDetail() {
+  const projectId = args[2];
+  if (!projectId) {
+    console.error("Usage: claw-kanban video detail <projectId>");
+    process.exit(1);
+  }
+
+  const store = getVideoStore();
+
+  try {
+    const detail = await store.getProject(projectId);
+
+    if (hasFlag("json")) {
+      console.log(JSON.stringify(detail));
+      return;
+    }
+
+    const p = detail.project;
+    console.log(`\n🎬 ${p.title}`);
+    console.log(`${"─".repeat(40)}`);
+    console.log(`ID:       ${p.id}`);
+    console.log(`Duration: ${Math.round(p.duration)}s`);
+    console.log(`Created:  ${p.created_at}`);
+    console.log(`Status:   ${p.upload_status}`);
+
+    if (detail.segments.length > 0) {
+      console.log(`\nClips (${detail.segments.length}):`);
+      for (let i = 0; i < detail.segments.length; i++) {
+        const s = detail.segments[i];
+        const start = formatTime(s.start);
+        const end = formatTime(s.end);
+        console.log(`  ${i}. ${s.title}  [${start} → ${end}]`);
+        if (s.summary) console.log(`     ${s.summary}`);
+        if (s.publicUrl) console.log(`     ${s.publicUrl}`);
+      }
+    } else {
+      console.log("\nNo clips generated yet.");
+    }
+    console.log();
+  } catch (error: any) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+async function runVideoDownload() {
+  const projectId = args[2];
+  if (!projectId) {
+    console.error("Usage: claw-kanban video download <projectId> [--output ./clips/] [--segment 0]");
+    process.exit(1);
+  }
+
+  const store = getVideoStore();
+  const outputDir = getFlag("output") ?? "./clips";
+  const segmentIdx = getFlag("segment") !== undefined ? parseInt(getFlag("segment")!, 10) : undefined;
+
+  try {
+    const detail = await store.getProject(projectId);
+    const segments = detail.segments;
+
+    if (segments.length === 0) {
+      console.error("No clips found for this project. Run 'video process' first.");
+      process.exit(1);
+    }
+
+    const toDownload = segmentIdx !== undefined
+      ? segments.filter((_, i) => i === segmentIdx)
+      : segments;
+
+    if (toDownload.length === 0) {
+      console.error(`Segment index ${segmentIdx} not found.`);
+      process.exit(1);
+    }
+
+    if (!hasFlag("json")) console.log(`\nDownloading ${toDownload.length} clip(s) to ${outputDir}...\n`);
+
+    const downloaded: string[] = [];
+    for (const seg of toDownload) {
+      if (!seg.publicUrl) continue;
+      const safeTitle = (seg.title || "clip").replace(/[^a-zA-Z0-9._-]/g, "_");
+      const outputPath = `${outputDir}/${safeTitle}.mp4`;
+      await store.downloadClip(seg.publicUrl, outputPath, (msg) => {
+        if (!hasFlag("json")) console.log(`  ${msg}`);
+      });
+      downloaded.push(outputPath);
+    }
+
+    if (hasFlag("json")) {
+      console.log(JSON.stringify({ success: true, downloaded }));
+    } else {
+      console.log(`\n✅ Downloaded ${downloaded.length} clip(s)\n`);
+    }
+  } catch (error: any) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+async function runVideoDelete() {
+  const projectId = args[2];
+  if (!projectId) {
+    console.error("Usage: claw-kanban video delete <projectId>");
+    process.exit(1);
+  }
+
+  const store = getVideoStore();
+
+  try {
+    await store.deleteProject(projectId);
+
+    if (hasFlag("json")) {
+      console.log(JSON.stringify({ success: true }));
+    } else {
+      console.log(`✅ Deleted project ${projectId}`);
+    }
+  } catch (error: any) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function printVideoHelp() {
+  console.log(`
+🎬 claw-kanban video — Video Clip Processing
+
+Commands:
+  process <file> [options]           Process video: upload → transcribe → analyze → split
+  list                               List all video projects
+  detail <projectId>                 Show project detail with clips
+  download <projectId> [options]     Download clips to local disk
+  delete <projectId>                 Delete a video project
+
+Options for process:
+  --keywords <text>                  Keywords to improve transcription accuracy
+  --output <dir>                     Auto-download clips after processing
+
+Options for download:
+  --output <dir>                     Output directory (default: ./clips)
+  --segment <index>                  Download only a specific segment (0-based)
+
+Global:
+  --json                             Output JSON (for machine parsing)
+`);
+}
+
 // ─── Help ───
 
 function printHelp() {
@@ -409,6 +725,7 @@ Commands:
   detail <id>                        Show task detail
   stats                              Print board statistics
   sync                               Sync from OpenClaw session history
+  video <subcommand>                 Video clip processing (run 'video help' for details)
 
 Options for add/update:
   --desc <text>                      Description

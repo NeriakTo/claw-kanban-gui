@@ -1,7 +1,7 @@
 {
   "name": "claw-kanban",
-  "version": "0.1.1",
-  "description": "OpenClaw plugin — visual Kanban board for managing your lobster's tasks",
+  "version": "0.2.0",
+  "description": "OpenClaw plugin — Kanban board, SEO, EDM, and Video Clip tools for your AI agent",
   "type": "module",
   "main": "dist/index.js",
   "repository": {
@@ -9,7 +9,7 @@
     "url": "git+https://github.com/Joeyzzyy/claw-kanban.git"
   },
   "bugs": "https://github.com/Joeyzzyy/claw-kanban/issues",
-  "homepage": "https://github.com/Joeyzzyy/claw-kanban#readme",
+  "homepage": "https://www.teammate.work",
   "author": "seenos",
   "files": [
     "dist",
@@ -17,7 +17,8 @@
     "skills",
     "README.md",
     "CLOUD_USAGE.md",
-    "LICENSE"
+    "LICENSE",
+    "docs"
   ],
   "types": "dist/index.d.ts",
   "bin": {
@@ -35,7 +36,9 @@
     "openclaw",
     "kanban",
     "task-management",
-    "lobster",
+    "seo",
+    "edm",
+    "video-clip",
     "ai-agent"
   ],
   "license": "MIT",

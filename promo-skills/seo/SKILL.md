@@ -16,7 +16,7 @@ This is an **automated workflow prompt** that equips your OpenClaw agent with a 
 > ```bash
 > openclaw plugins install claw-kanban
 > ```
-> *Get your free Dashboard API Key to see the visualization at: **https://webkanbanforopenclaw.vercel.app***
+> *Get your free Dashboard API Key to see the visualization at: **https://www.teammate.work***
 
 ### The Pipeline Steps
 

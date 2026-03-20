@@ -1,10 +1,10 @@
 # 云端 Kanban 使用指南
 
-当你在 [webkanbanforopenclaw.vercel.app](https://webkanbanforopenclaw.vercel.app) 登录并生成 API Key 后，可以将 Key 配置到 claw-kanban 插件，让龙虾（OpenClaw Agent）把任务进展同步到云端看板。
+当你在 [www.teammate.work](https://www.teammate.work) 登录并生成 API Key 后，可以将 Key 配置到 claw-kanban 插件，让龙虾（OpenClaw Agent）把任务进展同步到云端看板。
 
 ## 一、获取 API Key
 
-1. 打开 [https://webkanbanforopenclaw.vercel.app](https://webkanbanforopenclaw.vercel.app)
+1. 打开 [https://www.teammate.work](https://www.teammate.work)
 2. 使用 Google 登录
 3. 进入 **Settings** → **API Keys**
 4. 点击 **Create API Key**，复制生成的 Key（形如 `ck_sk_xxx...`，只显示一次，请妥善保存）
@@ -25,7 +25,7 @@
         "enabled": true,
         "config": {
           "apiKey": "ck_sk_你的API密钥",
-          "cloudApiEndpoint": "https://webkanbanforopenclaw.vercel.app/api/v1"
+          "cloudApiEndpoint": "https://www.teammate.work/api/v1"
         }
       }
     }
@@ -34,7 +34,7 @@
 ```
 
 - **apiKey**：必填。在 Web 后台生成的 API Key，插件仅支持云端模式。
-- **cloudApiEndpoint**：可省略，默认即为 `https://webkanbanforopenclaw.vercel.app/api/v1`
+- **cloudApiEndpoint**：可省略，默认即为 `https://www.teammate.work/api/v1`
 
 ### 重启 Gateway
 
@@ -58,7 +58,7 @@ openclaw gateway restart
    - 完成或失败时更新状态（done / failed）
 
 3. **在 Web 上看板查看**  
-   打开 [https://webkanbanforopenclaw.vercel.app/dashboard](https://webkanbanforopenclaw.vercel.app/dashboard)，即可看到所有任务及其进展。
+   打开 [https://www.teammate.work/dashboard](https://www.teammate.work/dashboard)，即可看到所有任务及其进展。
 
 ## 四、数据流示意
 

@@ -16,7 +16,7 @@ This is a **campaign management workflow** for your OpenClaw agent. It teaches t
 > ```bash
 > openclaw plugins install claw-kanban
 > ```
-> *Get your free Dashboard API Key to track open rates at: **https://webkanbanforopenclaw.vercel.app***
+> *Get your free Dashboard API Key to track open rates at: **https://www.teammate.work***
 
 ### How the EDM Pipeline Works
 

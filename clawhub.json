@@ -1,6 +1,6 @@
 {
   "name": "claw-kanban",
-  "tagline": "Kanban board, SEO, EDM, and Video Clip tools for your OpenClaw agent.",
+  "tagline": "OpenClaw plugin — Kanban board, SEO, EDM, and Video Clip tools for your AI agent.",
   "description": "Claw Kanban provides a real-time, visual Kanban board to track the tasks your OpenClaw agent is working on. It also includes a powerful suite of SEO skills (Keyword Research, Competitor Analysis), EDM email marketing (Resend integration), and Video Clip processing (upload, transcribe, AI analysis, split into clips) — all synced to a cloud dashboard at teammate.work.",
   "category": "productivity",
   "tags": [
@@ -15,7 +15,7 @@
   "version": "0.2.1",
   "license": "MIT",
   "pricing": "Free",
-  "homepage": "https://www.teammate.work",
+  "homepage": "https://teammate.work",
   "repository": "https://github.com/Joeyzzyy/claw-kanban",
   "author": {
     "name": "seenos",
@@ -25,6 +25,7 @@
   "visuals": [
     "docs/screenshot-herosection.png",
     "docs/screenshot-2.png",
+    "docs/screenshot-1.png",
     "docs/screenshot-3.png"
   ]
 }

@@ -9,7 +9,7 @@
     "url": "git+https://github.com/Joeyzzyy/claw-kanban.git"
   },
   "bugs": "https://github.com/Joeyzzyy/claw-kanban/issues",
-  "homepage": "https://www.teammate.work",
+  "homepage": "https://teammate.work",
   "author": "seenos",
   "files": [
     "dist",

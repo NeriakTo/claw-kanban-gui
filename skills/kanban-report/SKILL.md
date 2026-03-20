@@ -44,4 +44,4 @@ When the user asks about task status, progress, or "what have you been doing", u
 
 ### Cloud mode
 
-Tasks are synced to the web dashboard (www.teammate.work) when you use `kanban_update`. If the board looks empty, the user may need to configure the claw-kanban plugin with an apiKey and ensure tasks are being created via `kanban_update` as you work.
+Tasks are synced to the web dashboard ([teammate.work](https://teammate.work)) when you use `kanban_update`. If the board looks empty, the user may need to configure the claw-kanban plugin with an apiKey and ensure tasks are being created via `kanban_update` as you work.

@@ -2,8 +2,8 @@
   "$schema": "https://docs.openclaw.ai/schemas/plugin.json",
   "id": "claw-kanban",
   "name": "claw-kanban",
-  "version": "0.2.0",
-  "description": "Visual Kanban board for managing your lobster's tasks. Track what your OpenClaw is doing, has done, and plans to do — all in one board.",
+  "version": "0.2.1",
+  "description": "OpenClaw plugin — Kanban board, SEO, EDM, and Video Clip tools for your AI agent. Real-time cloud dashboard at teammate.work.",
   "author": "seenos",
   "license": "MIT",
   "homepage": "https://teammate.work",
@@ -18,7 +18,7 @@
       "cloudApiEndpoint": {
         "type": "string",
         "description": "The endpoint for the Claw Kanban Cloud API.",
-        "default": "https://www.teammate.work/api/v1"
+        "default": "https://teammate.work/api/v1"
       },
       "resendApiKey": {
         "type": "string",
@@ -218,12 +218,17 @@
       }
     },
     "kanban_config_save": {
-      "description": "Save API keys persistently to the global local configuration",
+      "description": "Save API keys locally, and sync AI settings to your cloud account",
       "parameters": {
         "type": "object",
         "properties": {
           "apiKey": { "type": "string", "description": "Cloud Kanban API Key" },
-          "resendApiKey": { "type": "string", "description": "Resend API Key for EDM" }
+          "resendApiKey": { "type": "string", "description": "Resend API Key for EDM" },
+          "openaiApiKey": { "type": "string", "description": "OpenAI API Key for video processing" },
+          "openaiBaseUrl": { "type": "string", "description": "Custom Base URL for OpenAI API (optional)" },
+          "openaiApiVersion": { "type": "string", "description": "API Version for Azure OpenAI (optional)" },
+          "openaiWhisperModel": { "type": "string", "description": "Audio model name (optional)" },
+          "openaiChatModel": { "type": "string", "description": "Chat model name (optional)" }
         }
       }
     },

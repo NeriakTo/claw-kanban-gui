@@ -12,7 +12,7 @@ import type {
  */
 export class VideoCloudStore {
   private apiKey: string;
-  private baseEndpoint: string; // e.g. "https://www.teammate.work"
+  private baseEndpoint: string; // e.g. "https://teammate.work"
 
   constructor(apiKey: string, endpoint: string) {
     this.apiKey = apiKey;

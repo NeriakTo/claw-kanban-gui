@@ -25,17 +25,62 @@ const plugin = {
     // --- Provide a config save tool to update the global config persistently ---
     api.registerTool({
       name: "kanban_config_save",
-      description: "Save API keys persistently so the user doesn't have to re-enter them",
-      parameters: {
-        type: "object",
-        properties: {
-          apiKey: { type: "string" },
-          resendApiKey: { type: "string" }
-        }
-      },
+      description: "Save API keys locally, and sync AI settings to the cloud account",
+      parameters: manifestTools.kanban_config_save.parameters,
       async execute(_id: string, params: any) {
-        saveGlobalConfig(params);
-        return { content: [{ type: "text", text: "Configuration saved globally. NOTE: The OpenClaw gateway must be restarted for the new configuration to take effect." }] };
+        // 1. Save local config (apiKey and resendApiKey)
+        const localUpdates: any = {};
+        if (params.apiKey) localUpdates.apiKey = params.apiKey;
+        if (params.resendApiKey) localUpdates.resendApiKey = params.resendApiKey;
+        if (Object.keys(localUpdates).length > 0) {
+          saveGlobalConfig(localUpdates);
+        }
+
+        // 2. Sync AI settings to the cloud if the user has an apiKey configured
+        const currentApiKey = params.apiKey || pluginConfig.apiKey?.trim();
+        const rawEndpoint = pluginConfig.cloudApiEndpoint?.trim() ?? "https://teammate.work/api/v1";
+        const baseEndpoint = rawEndpoint.replace(/\/api\/v1\/?$/, "");
+
+        const cloudUpdates: any = {};
+        if (params.openaiApiKey !== undefined) cloudUpdates.openai_api_key = params.openaiApiKey;
+        if (params.openaiBaseUrl !== undefined) cloudUpdates.openai_base_url = params.openaiBaseUrl;
+        if (params.openaiApiVersion !== undefined) cloudUpdates.openai_api_version = params.openaiApiVersion;
+        if (params.openaiWhisperModel !== undefined) cloudUpdates.openai_whisper_model = params.openaiWhisperModel;
+        if (params.openaiChatModel !== undefined) cloudUpdates.openai_chat_model = params.openaiChatModel;
+        if (params.resendApiKey !== undefined) cloudUpdates.resend_api_key = params.resendApiKey;
+
+        let cloudMsg = "";
+        if (Object.keys(cloudUpdates).length > 0) {
+          if (!currentApiKey) {
+            cloudMsg = " (Cloud AI settings not synced because your teammate.work API Key is missing. Please provide apiKey first.)";
+          } else {
+            try {
+              const res = await fetch(`${baseEndpoint}/api/settings`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${currentApiKey}`
+                },
+                body: JSON.stringify(cloudUpdates)
+              });
+              if (!res.ok) {
+                const err = (await res.json().catch(() => ({}))) as any;
+                cloudMsg = ` (Failed to sync AI settings to cloud: ${err.error || res.status})`;
+              } else {
+                cloudMsg = " (Successfully synced AI settings to your cloud account!)";
+              }
+            } catch (e: any) {
+              cloudMsg = ` (Cloud sync error: ${e.message})`;
+            }
+          }
+        }
+
+        return { 
+          content: [{ 
+            type: "text", 
+            text: `Configuration saved locally.${cloudMsg} NOTE: The OpenClaw gateway must be restarted for new local configuration to take effect.` 
+          }] 
+        };
       }
     });
 
@@ -44,7 +89,7 @@ const plugin = {
     const edmStore = pluginConfig.apiKey?.trim()
       ? new EdmCloudStore(
           pluginConfig.apiKey.trim(),
-          pluginConfig.cloudApiEndpoint?.trim() ?? "https://www.teammate.work/api/v1"
+          pluginConfig.cloudApiEndpoint?.trim() ?? "https://teammate.work/api/v1"
         )
       : null;
 
@@ -115,7 +160,7 @@ const plugin = {
     const store = apiKey
       ? new CloudBoardStore(
           apiKey,
-          pluginConfig.cloudApiEndpoint?.trim() ?? "https://www.teammate.work/api/v1"
+          pluginConfig.cloudApiEndpoint?.trim() ?? "https://teammate.work/api/v1"
         )
       : null;
 
@@ -136,7 +181,7 @@ const plugin = {
               type: "text",
               text: JSON.stringify({
                 success: false,
-                message: "Cloud API key not configured. Please ask the user for their Claw Kanban API Key (they can get it at https://www.teammate.work), then use `kanban_config_save` to save it."
+                message: "Cloud API key not configured. Please ask the user for their Claw Kanban API Key (they can get it at https://teammate.work), then use `kanban_config_save` to save it."
               })
             }]
           };
@@ -196,7 +241,7 @@ const plugin = {
               type: "text",
               text: JSON.stringify({
                 success: false,
-                message: "Cloud API key not configured. Please ask the user for their Claw Kanban API Key (they can get it at https://www.teammate.work), then use `kanban_config_save` to save it."
+                message: "Cloud API key not configured. Please ask the user for their Claw Kanban API Key (they can get it at https://teammate.work), then use `kanban_config_save` to save it."
               })
             }]
           };
@@ -215,7 +260,7 @@ const plugin = {
     const videoStore = apiKey
       ? new VideoCloudStore(
           apiKey,
-          pluginConfig.cloudApiEndpoint?.trim() ?? "https://www.teammate.work/api/v1"
+          pluginConfig.cloudApiEndpoint?.trim() ?? "https://teammate.work/api/v1"
         )
       : null;
 
@@ -275,7 +320,7 @@ const plugin = {
 
       if (!store) {
         prependContext += `**⚠️ ACTION REQUIRED**: The Claw Kanban API Key is not configured. 
-Before tracking tasks, you MUST ask the user for their API Key (they can get one at https://www.teammate.work). 
+Before tracking tasks, you MUST ask the user for their API Key (they can get one at https://teammate.work). 
 Once they provide it, use the \`kanban_config_save\` tool to save it, AND TELL THE USER to restart their OpenClaw gateway for it to take effect. Do not attempt to use \`kanban_update\` until configured.\n\n`;
       }
 
@@ -309,6 +354,9 @@ When working on an EDM task (taskType="edm"):
 1. After calling \`edm_send\`, the response includes a \`campaignId\`.
 2. Save this \`campaignId\` — you MUST pass it when completing the task: \`kanban_update(action="complete", taskId="<id>", campaignId="<campaignId>", result="<summary>")\`
 3. This links the task to the campaign record so the dashboard can display real delivery stats (recipients, open rate, click rate, etc.) instead of relying on text parsing.
+
+### AI Settings for Video Processing
+If the user wants to process videos (or send emails via cloud), they MUST configure their third-party API Keys (e.g. OpenAI). You can ask for them and save them by calling \`kanban_config_save(openaiApiKey="sk-...", resendApiKey="re_...")\`. This securely syncs it to their cloud account at teammate.work.
 
 ### Template Hint
 If a matching template exists (e.g. "keyword-research", "competitor-analysis", "on-page-seo-auditor", "seo-campaign", "sitemap-gap-analyzer"), pass \`template="<exact-name>"\` in the create call to auto-populate subtasks.`;

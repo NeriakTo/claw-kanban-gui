@@ -1,67 +1,69 @@
 # 🦞 Claw Kanban
 
 <div align="center">
-  <h3>The AI Marketing & Video Command Center for OpenClaw</h3>
-  <p>Watch your lobster run SEO campaigns, send emails, and clip videos — while you monitor everything on a live Kanban board.</p>
 
-  [![Version: 0.2.0](https://img.shields.io/badge/npm-v0.2.0-blue.svg)](https://www.npmjs.com/package/claw-kanban)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-Plugin-ff5a36.svg)](https://openclaw.ai)
+**OpenClaw plugin — Kanban board, SEO, EDM, and Video Clip tools for your AI agent**
+
+*Watch your lobster run SEO campaigns, send emails, and clip videos — while you monitor everything on a live Kanban board synced to the cloud.*
+
+[![npm version](https://img.shields.io/npm/v/claw-kanban.svg)](https://www.npmjs.com/package/claw-kanban)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-Plugin-ff5a36.svg)](https://openclaw.ai)
+[![Website](https://img.shields.io/badge/Cloud%20dashboard-teammate.work-6366f1.svg)](https://teammate.work)
+
+**Latest release: v0.2.1** · [npm](https://www.npmjs.com/package/claw-kanban) · [Cloud dashboard](https://teammate.work) · [Issues](https://github.com/Joeyzzyy/claw-kanban/issues)
+
 </div>
 
 ---
 
-Equip your OpenClaw agent with the ultimate productivity plugin. Bulk-generate EEAT-compliant SEO content, automate Resend email campaigns, process videos into short clips — all while monitoring every task on a live, real-time Kanban board.
+Equip your OpenClaw agent with a productivity plugin: bulk-generate EEAT-aware SEO content, automate Resend email campaigns, process videos into short clips — all while every task streams to a real-time Kanban on **[teammate.work](https://teammate.work)** (canonical URL, no `www`).
 
-![Claw Kanban Dashboard](docs/screenshot-herosection.png)
+## Screenshots
 
-## ✨ Core Pillars
+| Dashboard hero | Live task tracking |
+| :---: | :---: |
+| ![Claw Kanban dashboard](docs/screenshot-herosection.png) | ![Live tracking on task cards](docs/screenshot-2.png) |
 
-### 1. The Core Engine: A Visual Kanban Board
-Before executing massive campaigns, you need observability. As your OpenClaw agent writes articles, sends emails, or clips videos, it updates this Kanban board in real-time.
-- Track subtasks
-- Read detailed progress logs
-- Download generated artifacts (Markdown/HTML files, video clips) directly from the cloud dashboard.
+| Workflow & board | Another dashboard view |
+| :---: | :---: |
+| ![Claw Kanban workflow](docs/screenshot-1.png) | ![Claw Kanban — additional view](docs/screenshot-3.png) |
 
-### 2. Pillar 1: SEO Engine (From sitemap to published content)
-Equip your agent with expert SEO skills. It can analyze your sitemap to find content gaps, perform SERP competitor analysis, and bulk-generate high-quality, EEAT-compliant markdown articles ready for your blog.
-- **Sitemap Gap Analyzer**: Crawls your existing content to find high-ROI keywords you are missing.
-- **Competitor Intel**: Analyzes SERP rivals and reverse-engineers their content structures.
-- **EEAT Content**: Generates deep, factual articles with proper LSI keywords and metadata.
-- **On-Page Audits**: Scans your live URLs and provides actionable checklists to improve ranking.
+## ✨ Core pillars
 
-### 3. Pillar 2: EDM Engine (Automated Email Marketing)
-Connect your Resend API key and your lobster transforms into a full-stack email marketer.
-- **AI Email Design**: Auto-generates responsive, inline-CSS HTML emails matching your brand.
-- **Local CRM Sync**: Maintains `audience.json` locally to track who was emailed and who bounced.
-- **Live Tracking**: Polls Resend to show open rates and delivery stats right on the task card.
+### 1. Visual Kanban (core)
+As your agent writes articles, sends emails, or clips videos, the board updates in real time.
 
-### 4. Pillar 3: Video Clip Engine (Upload → Transcribe → AI Split)
-Turn long videos into short, topic-based clips — fully automated.
-- **One-command processing**: Upload a video, transcribe audio, AI-analyze for topic boundaries, and split into clips.
-- **Cloud-synced**: All projects, transcripts, and clips are stored in the cloud and visible on the web dashboard.
-- **CLI + Agent**: Process videos via `claw-kanban video process` or let the agent handle it conversationally.
+- Track subtasks and progress logs  
+- Download artifacts (Markdown/HTML, clips) from the cloud dashboard  
+
+### 2. SEO engine (sitemap → published content)
+Sitemap gap analysis, SERP competitor intel, EEAT-style articles, and on-page audits.
+
+### 3. EDM engine (Resend)
+AI-assisted HTML emails, local audience tracking, delivery/open stats on task cards.
+
+### 4. Video clip engine (upload → transcribe → split)
+One pipeline from long video to topic-based shorts; CLI and agent-driven workflows.
 
 ---
 
 ## 🚀 Installation
 
-**One command.** Your lobster gets the `claw-kanban` plugin and can start syncing tasks.
-
 ```bash
 openclaw plugins install claw-kanban
 ```
 
-*(Note: Requires Node.js 22+ and an active OpenClaw setup)*
+Requires **Node.js 22+** and a working OpenClaw setup. Package on npm: [`claw-kanban`](https://www.npmjs.com/package/claw-kanban) (see there for the latest version and full metadata).
 
-## ⚙️ Quick Start & Configuration
+## ⚙️ Quick start
 
-1. **Log in with Google:** Visit our cloud dashboard at **[www.teammate.work](https://www.teammate.work)** and sign in.
-2. **Get your API key:** Click 'Get your keys' in the dashboard. Copy the key (starts with `ck_sk_`).
-3. **Give the key to your lobster:** You can configure the API Key by telling your agent:
-   > "Please save my Claw Kanban API Key: `ck_sk_...`"
+1. **Sign in:** Open **[https://teammate.work](https://teammate.work)** (not `www`) with Google.  
+2. **API key:** In the dashboard, use **Get your keys** and copy the key (`ck_sk_…`).  
+3. **Configure the agent**, for example:  
+   > Please save my Claw Kanban API Key: `ck_sk_...`
 
-Or, manually add it to your `~/.openclaw/openclaw.json` (or `~/.claw-kanban/config.json`):
+Or add to `~/.openclaw/openclaw.json` (or `~/.claw-kanban/config.json`):
 
 ```json
 {
@@ -79,26 +81,22 @@ Or, manually add it to your `~/.openclaw/openclaw.json` (or `~/.claw-kanban/conf
 }
 ```
 
-*Don't forget to restart your OpenClaw gateway (`openclaw gateway restart`) after manually changing configurations.*
+Default cloud API base URL: `https://teammate.work/api/v1` (override with `cloudApiEndpoint` if needed).
 
-## 🗣️ Just talk to your lobster.
+Restart the gateway after manual config changes: `openclaw gateway restart`.
 
-No complex UI to learn. Just tell OpenClaw what you want to achieve, and the plugin automatically manages the workflow on your Kanban board.
+## 🗣️ Example prompts
 
-**SEO Example:**
-> "Read my sitemap at https://example.com/sitemap.xml and find 5 high-ROI keyword gaps. Write an EEAT-compliant article for the best one."
+**SEO:**  
+> Read my sitemap at https://example.com/sitemap.xml and find 5 high-ROI keyword gaps. Write an EEAT-compliant article for the best one.
 
-**EDM Example:**
-> "Design a launch email for our new 'Pro Plan' using our brand colors. Send it to the audience list in my local folder."
+**EDM:**  
+> Design a launch email for our new Pro Plan using our brand colors. Send it to the audience list in my local folder.
 
-**Video Clip Example:**
-> "Help me clip /Users/me/Downloads/meeting.mp4 into short segments. Keywords: product launch, pricing strategy."
-
-![Live Tracking](docs/screenshot-2.png)
+**Video:**  
+> Help me clip /Users/me/Downloads/meeting.mp4 into short segments. Keywords: product launch, pricing strategy.
 
 ## 🎬 Video CLI
-
-You can also process videos directly from the command line:
 
 ```bash
 claw-kanban video process ./meeting.mp4 --keywords "product launch" --output ./clips/
@@ -108,15 +106,14 @@ claw-kanban video download <projectId> --output ./clips/
 claw-kanban video delete <projectId>
 ```
 
-## 💖 Acknowledgements & Credits
+## 💖 Acknowledgements
 
-This plugin integrates and builds upon the excellent [SEO & GEO Skills Library](https://github.com/aaron-he-zhu/seo-geo-claude-skills) by Aaron Zhu. We have incorporated several of their powerful SEO skills directly into Claw Kanban to provide a complete, closed-loop SEO workflow. We've also included a custom `markdown-to-html` skill to seamlessly turn those SEO Markdown drafts into publish-ready webpages.
-
-We extend our gratitude to the original author for open-sourcing these high-quality skills under MIT. Our plugin merges these capabilities with a visual task management board to track the agent's progress as it executes these SEO workflows.
+SEO capabilities build on the [SEO & GEO Skills Library](https://github.com/aaron-he-zhu/seo-geo-claude-skills) by Aaron Zhu (MIT), plus an in-repo `markdown-to-html` skill for publish-ready HTML.
 
 ## 📜 License
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
 
 ---
-*Built for OpenClaw. Not affiliated or endorsed by the official OpenClaw team.*
+
+*Built for OpenClaw. Not affiliated with or endorsed by the OpenClaw team.*

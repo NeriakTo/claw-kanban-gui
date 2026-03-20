@@ -78,4 +78,4 @@ Use `video_query` to manage existing video projects:
 - Keywords help with industry jargon, proper nouns, and technical terms
 - Each project stores the original video, transcript, and all generated clips in the cloud
 - Clips can be previewed via their `publicUrl` or downloaded locally
-- Projects can be deleted from the web dashboard at www.teammate.work
+- Projects can be deleted from the web dashboard at [teammate.work](https://teammate.work)

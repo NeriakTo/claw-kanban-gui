@@ -408,7 +408,7 @@ function getVideoStore(): VideoCloudStore {
     console.error("Run: claw-kanban video --help  or configure via ~/.claw-kanban/config.json");
     process.exit(1);
   }
-  const endpoint = config.cloudApiEndpoint?.trim() ?? "https://www.teammate.work/api/v1";
+  const endpoint = config.cloudApiEndpoint?.trim() ?? "https://teammate.work/api/v1";
   return new VideoCloudStore(apiKey, endpoint);
 }
 

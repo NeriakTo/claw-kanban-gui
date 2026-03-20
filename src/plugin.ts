@@ -39,8 +39,10 @@ const plugin = {
         // 2. Sync AI settings to the cloud if the user has an apiKey configured
         const currentApiKey = params.apiKey || pluginConfig.apiKey?.trim();
         const rawEndpoint = pluginConfig.cloudApiEndpoint?.trim() ?? "https://teammate.work/api/v1";
-        // IMPORTANT: We need a trailing slash if it doesn't exist, to properly append 'settings'
-        const baseEndpoint = rawEndpoint.replace(/\/v1\/?$/, "/");
+        let targetUrl = "https://teammate.work/api/settings";
+        if (rawEndpoint.includes("localhost") || rawEndpoint.includes("127.0.0.1")) {
+           targetUrl = "http://localhost:3000/api/settings";
+        }
 
         const cloudUpdates: any = {};
         if (params.openaiApiKey !== undefined) cloudUpdates.openai_api_key = params.openaiApiKey;
@@ -56,7 +58,7 @@ const plugin = {
             cloudMsg = " (Cloud AI settings not synced because your teammate.work API Key is missing. Please provide apiKey first.)";
           } else {
             try {
-              const res = await fetch(`${baseEndpoint}settings`, {
+              const res = await fetch(targetUrl, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -102,13 +104,17 @@ const plugin = {
         if (!currentApiKey) {
           return { content: [{ type: "text", text: "Cannot check cloud settings: Claw Kanban apiKey is not configured locally." }] };
         }
+        
+        // Ensure we explicitly fetch from /api/settings
+        // regardless of whether cloudApiEndpoint has /v1 or not
         const rawEndpoint = pluginConfig.cloudApiEndpoint?.trim() ?? "https://teammate.work/api/v1";
-        // IMPORTANT: We need a trailing slash if it doesn't exist, to properly append 'settings'
-        const baseEndpoint = rawEndpoint.replace(/\/v1\/?$/, "/");
+        let targetUrl = "https://teammate.work/api/settings";
+        if (rawEndpoint.includes("localhost") || rawEndpoint.includes("127.0.0.1")) {
+           targetUrl = "http://localhost:3000/api/settings";
+        }
 
         try {
-          // The endpoint should be https://teammate.work/api/settings
-          const res = await fetch(`${baseEndpoint}settings?t=${Date.now()}`, {
+          const res = await fetch(`${targetUrl}?t=${Date.now()}`, {
             method: "GET",
             headers: { "Authorization": `Bearer ${currentApiKey}` }
           });

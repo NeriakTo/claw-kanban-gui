@@ -95,7 +95,7 @@ const plugin = {
     api.registerTool({
       name: "kanban_config_check",
       description: "Check if third-party AI keys (OpenAI, Resend) are configured in the user's cloud account.",
-      parameters: { type: "object", properties: { refresh: { type: "boolean", description: "Force refresh status from cloud" } }, required: [] },
+      parameters: manifestTools.kanban_config_check.parameters,
       async execute(_id: string, _params: any) {
         const currentApiKey = pluginConfig.apiKey?.trim();
         if (!currentApiKey) {

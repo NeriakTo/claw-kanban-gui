@@ -21,13 +21,7 @@ Equip your OpenClaw agent with a productivity plugin: bulk-generate EEAT-aware S
 
 ## Screenshots
 
-| Dashboard hero | Live task tracking |
-| :---: | :---: |
-| ![Claw Kanban dashboard](docs/screenshot-herosection.png) | ![Live tracking on task cards](docs/screenshot-2.png) |
-
-| Workflow & board | Another dashboard view |
-| :---: | :---: |
-| ![Claw Kanban workflow](docs/screenshot-1.png) | ![Claw Kanban — additional view](docs/screenshot-3.png) |
+![Claw Kanban dashboard](docs/screenshot-herosection.png)
 
 ## ✨ Core pillars
 
@@ -109,6 +103,8 @@ claw-kanban video delete <projectId>
 ## 💖 Acknowledgements
 
 SEO capabilities build on the [SEO & GEO Skills Library](https://github.com/aaron-he-zhu/seo-geo-claude-skills) by Aaron Zhu (MIT), plus an in-repo `markdown-to-html` skill for publish-ready HTML.
+
+**Try our free companion:** [GEO-Lens Chrome Extension](https://chromewebstore.google.com/detail/geo-lens-geo-auditor-ai-v/hioiikdfioegkeidnbhcalfpmhaiiaab) — Professional GEO auditing tool with AI visibility monitoring for EEAT and CORE optimization.
 
 ## 📜 License
 

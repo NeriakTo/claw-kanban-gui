@@ -53,12 +53,12 @@
     "typescript": "^5.7.0"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=18"
   },
   "openclaw": {
     "id": "claw-kanban",
     "compat": {
-      "pluginApi": 1
+      "pluginApi": "^1.0.0"
     },
     "extensions": [
       "./dist/plugin.js"

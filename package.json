@@ -57,6 +57,9 @@
   },
   "openclaw": {
     "id": "claw-kanban",
+    "compat": {
+      "pluginApi": "1"
+    },
     "extensions": [
       "./dist/plugin.js"
     ]

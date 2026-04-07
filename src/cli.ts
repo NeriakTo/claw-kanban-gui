@@ -20,6 +20,7 @@
 import { BoardStore, BoardStorage } from "./store/index.js";
 import { VideoCloudStore } from "./store/video-store.js";
 import { SessionCollector } from "./collector/index.js";
+import { KanbanServer } from "./server/index.js";
 import { getMergedConfig } from "./config.js";
 import type { Column, Subtask } from "./types.js";
 
@@ -83,6 +84,9 @@ async function main() {
       return runSync(store, storage);
     case "video":
       return runVideo();
+    case "serve":
+    case "ui":
+      return runServe(store);
     case "help":
     case "--help":
     case "-h":
@@ -712,6 +716,27 @@ Global:
 
 // ─── Help ───
 
+// ─── Serve ───
+
+async function runServe(store: BoardStore) {
+  const port = Number(getFlag("port") ?? "18790");
+  const server = new KanbanServer(store);
+  await server.start(port);
+  console.log(`\n🦞 Kanban GUI is running at http://localhost:${port}\n`);
+  console.log(`   Press Ctrl+C to stop.\n`);
+  // Keep process alive
+  process.on("SIGINT", () => {
+    server.stop();
+    process.exit(0);
+  });
+  process.on("SIGTERM", () => {
+    server.stop();
+    process.exit(0);
+  });
+  // Block forever
+  await new Promise(() => {});
+}
+
 function printHelp() {
   console.log(`
 🦞 claw-kanban — OpenClaw Kanban Task Board
@@ -725,6 +750,7 @@ Commands:
   detail <id>                        Show task detail
   stats                              Print board statistics
   sync                               Sync from OpenClaw session history
+  serve [--port 18790]               Start the Web GUI server
   video <subcommand>                 Video clip processing (run 'video help' for details)
 
 Options for add/update:

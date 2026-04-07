@@ -1,4 +1,4 @@
-import { useState, useCallback, type FormEvent } from "react";
+import { useState, useCallback, useRef, type FormEvent, type KeyboardEvent } from "react";
 import { useKanbanStore } from "../store/kanban-store";
 import { createTask } from "../lib/api";
 import type { Column } from "../types";
@@ -8,54 +8,64 @@ export function CreateTaskDialog() {
   const theme = useKanbanStore((s) => s.theme);
   const showCreateDialog = useKanbanStore((s) => s.showCreateDialog);
   const setShowCreateDialog = useKanbanStore((s) => s.setShowCreateDialog);
-  const addTask = useKanbanStore((s) => s.addTask);
+  const addTaskToStore = useKanbanStore((s) => s.addTask);
+  const addToast = useKanbanStore((s) => s.addToast);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [column, setColumn] = useState<Column>("backlog");
   const [tags, setTags] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const isDark = theme === "dark";
 
-  const handleSubmit = useCallback(
-    async (e: FormEvent) => {
-      e.preventDefault();
-      if (!title.trim() || submitting) return;
+  const doSubmit = useCallback(async () => {
+    if (!title.trim() || submitting) return;
 
-      setSubmitting(true);
-      try {
-        const tagList = tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
-        const task = await createTask({
-          title: title.trim(),
-          description: description.trim() || undefined,
-          column,
-          tags: tagList.length > 0 ? tagList : undefined,
-        });
-        addTask(task);
-        setTitle("");
-        setDescription("");
-        setColumn("backlog");
-        setTags("");
-        setShowCreateDialog(false);
-      } catch {
-        // keep dialog open on error
-      } finally {
-        setSubmitting(false);
+    setSubmitting(true);
+    try {
+      const tagList = tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      const task = await createTask({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        column,
+        tags: tagList.length > 0 ? tagList : undefined,
+      });
+      addTaskToStore(task);
+      setTitle("");
+      setDescription("");
+      setColumn("backlog");
+      setTags("");
+      setShowCreateDialog(false);
+      addToast("success", "任務已建立");
+    } catch {
+      addToast("error", "建立失敗，請稍後再試");
+    } finally {
+      setSubmitting(false);
+    }
+  }, [title, description, column, tags, submitting, addTaskToStore, setShowCreateDialog, addToast]);
+
+  const handleSubmit = useCallback(
+    (e: FormEvent) => {
+      e.preventDefault();
+      doSubmit();
+    },
+    [doSubmit]
+  );
+
+  // Ctrl+Enter / Cmd+Enter to submit
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        doSubmit();
       }
     },
-    [
-      title,
-      description,
-      column,
-      tags,
-      submitting,
-      addTask,
-      setShowCreateDialog,
-    ]
+    [doSubmit]
   );
 
   if (!showCreateDialog) return null;
@@ -77,6 +87,7 @@ export function CreateTaskDialog() {
       <div
         className={`w-full max-w-md rounded-xl ${panelBg} ${borderColor} border shadow-2xl`}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
       >
         {/* Header */}
         <div
@@ -104,7 +115,7 @@ export function CreateTaskDialog() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
+        <form ref={formRef} onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
           <div>
             <label className={`text-xs font-medium ${mutedText} block mb-1`}>
               標題 *
@@ -177,6 +188,10 @@ export function CreateTaskDialog() {
               {submitting ? "建立中..." : "建立"}
             </button>
           </div>
+
+          <p className={`text-xs text-center ${mutedText}`}>
+            Ctrl+Enter 快速建立
+          </p>
         </form>
       </div>
     </div>

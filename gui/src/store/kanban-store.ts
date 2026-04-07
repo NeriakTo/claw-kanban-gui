@@ -1,5 +1,15 @@
 import { create } from "zustand";
 import type { BoardStats, Column, Task } from "../types";
+import {
+  deleteTask as apiDeleteTask,
+  archiveTask as apiArchiveTask,
+} from "../lib/api";
+
+interface ToastItem {
+  id: string;
+  type: "success" | "error" | "info";
+  message: string;
+}
 
 interface KanbanState {
   tasks: Task[];
@@ -8,6 +18,17 @@ interface KanbanState {
   showCreateDialog: boolean;
   theme: "dark" | "light";
   wsConnected: boolean;
+
+  // Search & Filter
+  searchQuery: string;
+  filterTags: string[];
+  showArchived: boolean;
+
+  // Sort
+  sortBy: "date" | "progress" | "name";
+
+  // Toast
+  toasts: ToastItem[];
 
   // Actions
   setTasks: (tasks: Task[]) => void;
@@ -20,9 +41,27 @@ interface KanbanState {
   setShowCreateDialog: (show: boolean) => void;
   toggleTheme: () => void;
   setWsConnected: (connected: boolean) => void;
+
+  // Search & Filter actions
+  setSearchQuery: (query: string) => void;
+  toggleFilterTag: (tag: string) => void;
+  setShowArchived: (show: boolean) => void;
+
+  // Sort actions
+  setSortBy: (sort: "date" | "progress" | "name") => void;
+
+  // Delete / Archive actions
+  deleteTask: (id: string) => Promise<void>;
+  archiveTaskAction: (id: string) => Promise<void>;
+
+  // Toast actions
+  addToast: (type: "success" | "error" | "info", message: string) => void;
+  removeToast: (id: string) => void;
 }
 
-export const useKanbanStore = create<KanbanState>((set) => ({
+let toastCounter = 0;
+
+export const useKanbanStore = create<KanbanState>((set, get) => ({
   tasks: [],
   stats: null,
   selectedTaskId: null,
@@ -32,6 +71,17 @@ export const useKanbanStore = create<KanbanState>((set) => ({
       ? (localStorage.getItem("claw-kanban-theme") as "dark" | "light")
       : null) ?? "dark",
   wsConnected: false,
+
+  // Search & Filter
+  searchQuery: "",
+  filterTags: [],
+  showArchived: false,
+
+  // Sort
+  sortBy: "date",
+
+  // Toast
+  toasts: [],
 
   setTasks: (tasks) => set({ tasks }),
 
@@ -71,4 +121,60 @@ export const useKanbanStore = create<KanbanState>((set) => ({
     }),
 
   setWsConnected: (connected) => set({ wsConnected: connected }),
+
+  // Search & Filter actions
+  setSearchQuery: (query) => set({ searchQuery: query }),
+
+  toggleFilterTag: (tag) =>
+    set((state) => ({
+      filterTags: state.filterTags.includes(tag)
+        ? state.filterTags.filter((t) => t !== tag)
+        : [...state.filterTags, tag],
+    })),
+
+  setShowArchived: (show) => set({ showArchived: show }),
+
+  // Sort actions
+  setSortBy: (sort) => set({ sortBy: sort }),
+
+  // Delete task
+  deleteTask: async (id) => {
+    try {
+      await apiDeleteTask(id);
+      set((state) => ({
+        tasks: state.tasks.filter((t) => t.id !== id),
+        selectedTaskId:
+          state.selectedTaskId === id ? null : state.selectedTaskId,
+      }));
+      get().addToast("success", "任務已刪除");
+    } catch {
+      get().addToast("error", "刪除失敗，請稍後再試");
+    }
+  },
+
+  // Archive task
+  archiveTaskAction: async (id) => {
+    try {
+      const updated = await apiArchiveTask(id);
+      set((state) => ({
+        tasks: state.tasks.map((t) => (t.id === id ? updated : t)),
+      }));
+      get().addToast("success", "任務已歸檔");
+    } catch {
+      get().addToast("error", "歸檔失敗，請稍後再試");
+    }
+  },
+
+  // Toast actions
+  addToast: (type, message) => {
+    const id = `toast-${++toastCounter}`;
+    set((state) => ({
+      toasts: [...state.toasts, { id, type, message }],
+    }));
+  },
+
+  removeToast: (id) =>
+    set((state) => ({
+      toasts: state.toasts.filter((t) => t.id !== id),
+    })),
 }));

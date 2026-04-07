@@ -60,6 +60,12 @@ export interface Task {
   // Progress logs
   logs: TaskLog[];
 
+  // Dependencies
+  dependsOn: string[]; // 依賴的 task IDs
+
+  // Archive
+  archived: boolean;
+
   // Timestamps
   createdAt: string; // ISO
   updatedAt: string; // ISO
@@ -100,7 +106,7 @@ export type BoardEvent =
 // ─── Tool call params (match openclaw.plugin.json) ───
 
 export interface KanbanUpdateParams {
-  action: "create" | "update" | "move" | "complete" | "fail";
+  action: "create" | "update" | "move" | "complete" | "fail" | "delete" | "archive";
   taskId?: string;
   title?: string;
   description?: string;
@@ -110,6 +116,7 @@ export interface KanbanUpdateParams {
   sessionId?: string;
   subtasks?: Subtask[];
   result?: string;
+  dependsOn?: string[];
   logMessage?: string;
   template?: string;
   taskType?: TaskType;

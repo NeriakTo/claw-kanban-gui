@@ -27,6 +27,8 @@ export interface Task {
   updatedAt: string;
   startedAt: string | null;
   completedAt: string | null;
+  dependsOn: string[];
+  archived: boolean;
 }
 
 export interface Board {

@@ -3,6 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 import type { Task } from "../types";
 import { useKanbanStore } from "../store/kanban-store";
 import { COLUMN_COLORS } from "../types";
+import { formatDuration, getTaskDuration } from "../lib/time";
 
 interface TaskCardProps {
   task: Task;
@@ -44,6 +45,7 @@ function getProgressColor(progress: number): string {
 export function TaskCard({ task }: TaskCardProps) {
   const theme = useKanbanStore((s) => s.theme);
   const selectTask = useKanbanStore((s) => s.selectTask);
+  const tasks = useKanbanStore((s) => s.tasks);
   const isDark = theme === "dark";
 
   const {
@@ -64,6 +66,19 @@ export function TaskCard({ task }: TaskCardProps) {
   const subtasksDone = task.subtasks.filter((s) => s.done).length;
   const subtasksTotal = task.subtasks.length;
 
+  // Dependency check
+  const hasDeps = task.dependsOn.length > 0;
+  const allDepsResolved = hasDeps
+    ? task.dependsOn.every((depId) => {
+        const dep = tasks.find((t) => t.id === depId);
+        return dep?.column === "done";
+      })
+    : true;
+
+  // Time tracking
+  const duration = getTaskDuration(task);
+  const durationStr = duration !== null ? formatDuration(duration) : null;
+
   return (
     <div
       ref={setNodeRef}
@@ -75,16 +90,32 @@ export function TaskCard({ task }: TaskCardProps) {
         isDark
           ? "bg-surface2-dark border-border-dark hover:border-gray-500"
           : "bg-white border-gray-200 hover:border-gray-400"
-      }`}
+      } ${task.archived ? "opacity-50" : ""}`}
     >
-      {/* Title */}
-      <h3
-        className={`font-semibold text-sm mb-2 line-clamp-2 ${
-          isDark ? "text-text-dark" : "text-text-light"
-        }`}
-      >
-        {task.title}
-      </h3>
+      {/* Title row */}
+      <div className="flex items-start gap-1.5 mb-2">
+        <h3
+          className={`font-semibold text-sm line-clamp-2 flex-1 ${
+            isDark ? "text-text-dark" : "text-text-light"
+          }`}
+        >
+          {task.title}
+        </h3>
+        {hasDeps && (
+          <span
+            className={`text-xs shrink-0 ${
+              allDepsResolved ? "text-green-400" : "text-red-400"
+            }`}
+            title={
+              allDepsResolved
+                ? "所有依賴已完成"
+                : `${task.dependsOn.length} 個依賴未全部完成`
+            }
+          >
+            🔗{task.dependsOn.length}
+          </span>
+        )}
+      </div>
 
       {/* Progress bar */}
       {task.progress > 0 && (
@@ -132,15 +163,24 @@ export function TaskCard({ task }: TaskCardProps) {
         </div>
       )}
 
-      {/* Subtasks + column indicator */}
+      {/* Bottom row: subtasks + time + column indicator */}
       <div className="flex items-center justify-between">
-        {subtasksTotal > 0 && (
-          <span
-            className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
-          >
-            {subtasksDone}/{subtasksTotal} subtasks
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {subtasksTotal > 0 && (
+            <span
+              className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+            >
+              {subtasksDone}/{subtasksTotal} subtasks
+            </span>
+          )}
+          {durationStr && (
+            <span
+              className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+            >
+              ⏱ {durationStr}
+            </span>
+          )}
+        </div>
         <span
           className="inline-block h-2 w-2 rounded-full ml-auto"
           style={{ backgroundColor: COLUMN_COLORS[task.column] }}

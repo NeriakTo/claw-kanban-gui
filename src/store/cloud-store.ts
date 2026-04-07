@@ -227,6 +227,8 @@ export class CloudBoardStore {
       updatedAt: cloudTask.updated_at,
       startedAt: cloudTask.started_at || null,
       completedAt: cloudTask.completed_at || null,
+      dependsOn: cloudTask.depends_on ?? [],
+      archived: cloudTask.archived ?? false,
     };
   }
 

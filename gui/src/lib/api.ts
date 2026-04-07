@@ -84,3 +84,26 @@ export function failTask(id: string, result?: string): Promise<Task> {
     body: JSON.stringify({ result }),
   });
 }
+
+export function deleteTask(id: string): Promise<Task> {
+  return request<Task>(`/tasks/${id}`, { method: "DELETE" });
+}
+
+export function archiveTask(id: string): Promise<Task> {
+  return request<Task>(`/tasks/${id}/archive`, { method: "PUT" });
+}
+
+export interface TaskDeps {
+  taskId: string;
+  dependencies: Array<{
+    id: string;
+    title: string;
+    column: string;
+    completed: boolean;
+  }>;
+  allResolved: boolean;
+}
+
+export function fetchTaskDeps(id: string): Promise<TaskDeps> {
+  return request<TaskDeps>(`/tasks/${id}/deps`);
+}

@@ -98,10 +98,19 @@ export class KanbanServer {
   /**
    * Parse JSON body from incoming request.
    */
-  private parseBody(req: IncomingMessage): Promise<Record<string, unknown>> {
+  private parseBody(req: IncomingMessage, maxBytes = 1_048_576): Promise<Record<string, unknown>> {
     return new Promise((resolve, reject) => {
       const chunks: Buffer[] = [];
-      req.on("data", (chunk: Buffer) => chunks.push(chunk));
+      let total = 0;
+      req.on("data", (chunk: Buffer) => {
+        total += chunk.length;
+        if (total > maxBytes) {
+          req.destroy();
+          reject(new KanbanValidationError("Request body too large"));
+          return;
+        }
+        chunks.push(chunk);
+      });
       req.on("end", () => {
         try {
           const raw = Buffer.concat(chunks).toString("utf-8");
@@ -164,6 +173,24 @@ export class KanbanServer {
   }
 
   /**
+   * Validate dependsOn array (task IDs, max 50, hex format, no cycles checked here).
+   */
+  private validateDependsOn(value: unknown): string[] | undefined {
+    if (value === undefined || value === null) return undefined;
+    if (!Array.isArray(value)) {
+      throw new KanbanValidationError("dependsOn must be an array");
+    }
+    if (value.length > 50) {
+      throw new KanbanValidationError("dependsOn exceeds maximum of 50 entries");
+    }
+    const ids = value.filter((v): v is string => typeof v === "string");
+    if (ids.some((id) => !/^[a-f0-9]{8,36}$/.test(id))) {
+      throw new KanbanValidationError("dependsOn contains invalid task ID format");
+    }
+    return ids;
+  }
+
+  /**
    * Validate string field with max length.
    */
   private validateString(value: unknown, maxLen = 1000): string | undefined {
@@ -185,7 +212,7 @@ export class KanbanServer {
     const origin = req.headers.origin ?? "";
     const isLocalOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
     res.setHeader("Access-Control-Allow-Origin", isLocalOrigin ? origin : "http://localhost:18790");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
     if (method === "OPTIONS") {
@@ -206,9 +233,39 @@ export class KanbanServer {
       return;
     }
 
+    // GET /api/tasks/:id/deps
+    if (method === "GET" && /^\/api\/tasks\/[a-f0-9]+\/deps$/.test(url)) {
+      const taskId = this.extractTaskId(url)!;
+      try {
+        this.sendJson(res, 200, this.store.getDependencyStatus(taskId));
+      } catch (err: unknown) {
+        const isNotFound = err instanceof Error && err.message.startsWith("Task not found");
+        this.sendJson(res, isNotFound ? 404 : 500, {
+          error: isNotFound ? err.message : "Internal server error",
+        });
+      }
+      return;
+    }
+
     // ─── Write API ───
 
     try {
+      // DELETE /api/tasks/:id
+      if (method === "DELETE" && /^\/api\/tasks\/[a-f0-9]+$/.test(url)) {
+        const taskId = this.extractTaskId(url)!;
+        const task = this.store.handleUpdate({ action: "delete", taskId });
+        this.sendJson(res, 200, task);
+        return;
+      }
+
+      // PUT /api/tasks/:id/archive
+      if (method === "PUT" && /^\/api\/tasks\/[a-f0-9]+\/archive$/.test(url)) {
+        const taskId = this.extractTaskId(url)!;
+        const task = this.store.handleUpdate({ action: "archive", taskId });
+        this.sendJson(res, 200, task);
+        return;
+      }
+
       // POST /api/tasks → create task
       if (method === "POST" && url === "/api/tasks") {
         const body = await this.parseBody(req);
@@ -225,6 +282,7 @@ export class KanbanServer {
           tags: this.validateTags(body.tags),
           subtasks: body.subtasks as Array<{ title: string; done: boolean }> | undefined,
           progress: this.validateProgress(body.progress),
+          dependsOn: this.validateDependsOn(body.dependsOn),
         });
         this.sendJson(res, 201, task);
         return;
@@ -284,6 +342,7 @@ export class KanbanServer {
           subtasks: body.subtasks as Array<{ title: string; done: boolean }> | undefined,
           column: body.column !== undefined ? this.validateColumn(body.column) : undefined,
           logMessage: this.validateString(body.logMessage, 2000),
+          dependsOn: this.validateDependsOn(body.dependsOn),
         });
         this.sendJson(res, 200, task);
         return;

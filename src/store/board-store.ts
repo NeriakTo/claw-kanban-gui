@@ -74,6 +74,10 @@ export class BoardStore {
         return this.completeTask(params);
       case "fail":
         return this.failTask(params);
+      case "delete":
+        return this.deleteTask(params);
+      case "archive":
+        return this.archiveTask(params);
     }
   }
 
@@ -89,6 +93,8 @@ export class BoardStore {
       taskType: params.taskType ?? "general",
       sessionId: params.sessionId ?? null,
       source: "agent",
+      dependsOn: params.dependsOn ?? [],
+      archived: false,
       result: null,
       logs: [],
       createdAt: now(),
@@ -118,6 +124,12 @@ export class BoardStore {
           task.subtasks.push(updateSub);
         }
       }
+    }
+    if (params.dependsOn !== undefined) {
+      if (this.hasCycle(task.id, params.dependsOn)) {
+        throw new Error("Circular dependency detected");
+      }
+      task.dependsOn = params.dependsOn;
     }
     if (params.logMessage) {
       if (!task.logs) task.logs = [];
@@ -174,6 +186,30 @@ export class BoardStore {
     return task;
   }
 
+  private deleteTask(params: KanbanUpdateParams): Task {
+    const task = this.findTask(params.taskId);
+    this.board.tasks = this.board.tasks.filter((t) => t.id !== task.id);
+    this.emit({ type: "task_deleted", taskId: task.id });
+    return task;
+  }
+
+  private archiveTask(params: KanbanUpdateParams): Task {
+    const task = this.findTask(params.taskId);
+    task.archived = true;
+    task.updatedAt = now();
+    this.emit({ type: "task_updated", task });
+    return task;
+  }
+
+  getDependencyStatus(taskId: string): { blocked: boolean; blockedBy: string[] } {
+    const task = this.findTask(taskId);
+    const blockedBy = (task.dependsOn ?? []).filter((depId) => {
+      const dep = this.board.tasks.find((t) => t.id === depId);
+      return dep && dep.column !== "done";
+    });
+    return { blocked: blockedBy.length > 0, blockedBy };
+  }
+
   // ─── Query ───
 
   handleQuery(params: KanbanQueryParams): unknown {
@@ -190,7 +226,7 @@ export class BoardStore {
   }
 
   private listTasks(column?: Column | "all", limit = 20): Task[] {
-    let tasks = this.board.tasks;
+    let tasks = this.board.tasks.filter((t) => !t.archived);
     if (column && column !== "all") {
       tasks = tasks.filter((t) => t.column === column);
     }
@@ -304,5 +340,22 @@ export class BoardStore {
     const task = this.board.tasks.find((t) => t.id === taskId);
     if (!task) throw new Error(`Task not found: ${taskId}`);
     return task;
+  }
+
+  /**
+   * Detect circular dependency via BFS traversal.
+   */
+  private hasCycle(startId: string, dependsOn: string[]): boolean {
+    const visited = new Set<string>();
+    const queue = [...dependsOn];
+    while (queue.length) {
+      const id = queue.shift()!;
+      if (id === startId) return true;
+      if (visited.has(id)) continue;
+      visited.add(id);
+      const dep = this.board.tasks.find((t) => t.id === id);
+      if (dep?.dependsOn) queue.push(...dep.dependsOn);
+    }
+    return false;
   }
 }

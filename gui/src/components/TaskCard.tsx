@@ -66,10 +66,11 @@ export function TaskCard({ task }: TaskCardProps) {
   const subtasksDone = task.subtasks.filter((s) => s.done).length;
   const subtasksTotal = task.subtasks.length;
 
-  // Dependency check
-  const hasDeps = task.dependsOn.length > 0;
+  // Dependency check (defensive: old tasks may lack dependsOn)
+  const deps = task.dependsOn ?? [];
+  const hasDeps = deps.length > 0;
   const allDepsResolved = hasDeps
-    ? task.dependsOn.every((depId) => {
+    ? deps.every((depId) => {
         const dep = tasks.find((t) => t.id === depId);
         return dep?.column === "done";
       })
@@ -109,10 +110,10 @@ export function TaskCard({ task }: TaskCardProps) {
             title={
               allDepsResolved
                 ? "所有依賴已完成"
-                : `${task.dependsOn.length} 個依賴未全部完成`
+                : `${deps.length} 個依賴未全部完成`
             }
           >
-            🔗{task.dependsOn.length}
+            🔗{deps.length}
           </span>
         )}
       </div>

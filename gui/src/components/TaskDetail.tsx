@@ -154,8 +154,8 @@ export function TaskDetail() {
     ? "bg-surface2-dark border-border-dark"
     : "bg-surface2-light border-gray-300";
 
-  // Dependency info
-  const depTasks = task.dependsOn
+  // Dependency info (defensive: old tasks may lack dependsOn)
+  const depTasks = (task.dependsOn ?? [])
     .map((depId) => {
       const depTask = tasks.find((t) => t.id === depId);
       return depTask

@@ -1,5 +1,5 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, watch, type FSWatcher } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import type { Board } from "../types.js";
@@ -10,11 +10,15 @@ const BOARD_FILE = join(DATA_DIR, "board.json");
 
 /**
  * Persistent storage backed by local JSON file.
+ * Watches for external changes (e.g. CLI operations) and reloads automatically.
  */
 export class BoardStorage {
   private store: BoardStore;
   private dirty = false;
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
+  private watcher: FSWatcher | null = null;
+  private ignoreNextChange = false;
+  private reloadTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(store: BoardStore) {
     this.store = store;
@@ -50,6 +54,7 @@ export class BoardStorage {
     await mkdir(DATA_DIR, { recursive: true });
     const board = this.store.getBoard();
     const json = JSON.stringify(board, null, 2);
+    this.ignoreNextChange = true;
     await writeFile(BOARD_FILE, json, "utf-8");
     this.dirty = false;
   }
@@ -67,6 +72,52 @@ export class BoardStorage {
         );
       }
     }, 500);
+  }
+
+  /**
+   * Start watching board.json for external changes (e.g. CLI operations).
+   * On change, reloads the file and updates the in-memory BoardStore,
+   * which triggers a WS broadcast to all connected GUI clients.
+   */
+  startWatching(): void {
+    if (this.watcher) return;
+    if (!existsSync(BOARD_FILE)) return;
+
+    this.watcher = watch(BOARD_FILE, () => {
+      // Ignore changes triggered by our own save
+      if (this.ignoreNextChange) {
+        this.ignoreNextChange = false;
+        return;
+      }
+
+      // Debounce reload to avoid double-fire (common with fs.watch)
+      if (this.reloadTimer) clearTimeout(this.reloadTimer);
+      this.reloadTimer = setTimeout(async () => {
+        this.reloadTimer = null;
+        try {
+          const raw = await readFile(BOARD_FILE, "utf-8");
+          const board = JSON.parse(raw) as Board;
+          this.store.setBoard(board);
+          console.log("[claw-kanban] Board reloaded from disk (external change detected)");
+        } catch {
+          // File might be mid-write, ignore
+        }
+      }, 200);
+    });
+
+    console.log("[claw-kanban] Watching board.json for external changes");
+  }
+
+  /**
+   * Stop watching board.json.
+   */
+  stopWatching(): void {
+    this.watcher?.close();
+    this.watcher = null;
+    if (this.reloadTimer) {
+      clearTimeout(this.reloadTimer);
+      this.reloadTimer = null;
+    }
   }
 
   /**

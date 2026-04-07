@@ -86,7 +86,7 @@ async function main() {
       return runVideo();
     case "serve":
     case "ui":
-      return runServe(store);
+      return runServe(store, storage);
     case "help":
     case "--help":
     case "-h":
@@ -718,18 +718,21 @@ Global:
 
 // ─── Serve ───
 
-async function runServe(store: BoardStore) {
+async function runServe(store: BoardStore, storage: BoardStorage) {
   const port = Number(getFlag("port") ?? "18790");
   const server = new KanbanServer(store);
   await server.start(port);
+  storage.startWatching();
   console.log(`\n🦞 Kanban GUI is running at http://localhost:${port}\n`);
   console.log(`   Press Ctrl+C to stop.\n`);
   // Keep process alive
   process.on("SIGINT", () => {
+    storage.stopWatching();
     server.stop();
     process.exit(0);
   });
   process.on("SIGTERM", () => {
+    storage.stopWatching();
     server.stop();
     process.exit(0);
   });

@@ -30,6 +30,7 @@ export function TaskDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const savingRef = useRef(false);
 
+  // Only reset form fields when switching to a different task (not on same-task reference changes from WS/fs.watch)
   useEffect(() => {
     if (task) {
       setEditTitle(task.title);
@@ -39,7 +40,7 @@ export function TaskDetail() {
       setEditTags(task.tags.join(", "));
       setConfirmDelete(false);
     }
-  }, [task]);
+  }, [selectedTaskId]);
 
   const handleSave = useCallback(
     async (field: string, value: unknown) => {
@@ -99,13 +100,14 @@ export function TaskDetail() {
       const updated = await apiCompleteTask(task.id);
       updateTaskInStore(updated);
       addToast("success", "任務已完成");
+      selectTask(null);
     } catch {
       setEditColumn(task.column);
       addToast("error", "操作失敗，請稍後再試");
     } finally {
       savingRef.current = false;
     }
-  }, [task, updateTaskInStore, addToast]);
+  }, [task, updateTaskInStore, addToast, selectTask]);
 
   const handleFail = useCallback(async () => {
     if (!task || savingRef.current) return;
@@ -114,13 +116,14 @@ export function TaskDetail() {
       const updated = await apiFailTask(task.id);
       updateTaskInStore(updated);
       addToast("info", "任務已標記失敗");
+      selectTask(null);
     } catch {
       setEditColumn(task.column);
       addToast("error", "操作失敗，請稍後再試");
     } finally {
       savingRef.current = false;
     }
-  }, [task, updateTaskInStore, addToast]);
+  }, [task, updateTaskInStore, addToast, selectTask]);
 
   const handleDelete = useCallback(async () => {
     if (!task) return;
@@ -132,6 +135,7 @@ export function TaskDetail() {
       await deleteTaskAction(task.id);
     } catch {
       addToast("error", "刪除失敗，請稍後再試");
+      setConfirmDelete(false);
     }
   }, [task, confirmDelete, deleteTaskAction, addToast]);
 
@@ -139,10 +143,11 @@ export function TaskDetail() {
     if (!task) return;
     try {
       await archiveTaskAction(task.id);
+      selectTask(null);
     } catch {
       addToast("error", "歸檔失敗，請稍後再試");
     }
-  }, [task, archiveTaskAction, addToast]);
+  }, [task, archiveTaskAction, addToast, selectTask]);
 
   if (!task) return null;
 
